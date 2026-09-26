@@ -1,0 +1,2321 @@
+##############################################################################
+# DTA Broom v3.5 - decompiled source (Python 3.12)
+##############################################################################
+# Source file:  DTA Broom v3_5.exe
+# Size:         11,312,432 bytes
+# SHA-256:      8062BB8484A29788FC11E40E5B5975C373DE9D279C436C0CD4A01D5A7C3DB4EE
+# Bundler:      PyInstaller 6.19.0, Python 3.12.0 (x86_64)
+# Author:       O_Xenom (per docstring)
+# Backend:      https://dta-backend-lf3q.onrender.com/anticheat
+#
+# Decompiler: patched pycdc build (adds Python 3.12 opcode support).  Before
+# decompiling, every LOAD_FAST_AND_CLEAR opcode is rewritten to LOAD_FAST so
+# that pycdc can reconstruct generator expressions; this is source-level
+# harmless (the variable is still assigned).  A few functions still trip
+# pycdc's control-flow reconstruction and fall back to annotated bytecode.
+
+==============================================================================
+dtabroom.py  (the ONLY code written by the author)
+==============================================================================
+# NOTE: whole-module decompile failed; falling back to per-function.
+
+def _xor_deobfuscate_fb(data_b64, mask_b64):
+    data = base64.b64decode(data_b64)
+    mask = base64.b64decode(mask_b64)
+    return (lambda .0 = None: for i, d in .0:
+    d ^ mask[i % len(mask)].0)(enumerate(data)())
+
+def init_secrets():
+    _FALLBACK_HMAC_KEY = _xor_deobfuscate_fb(_FALLBACK_KEY_DATA, _FALLBACK_KEY_MASK)
+    _FALLBACK_ENDPOINT = _xor_deobfuscate_fb(_FALLBACK_EP_DATA, _FALLBACK_EP_MASK).decode('utf-8')
+
+def get_endpoint():
+    return _FALLBACK_ENDPOINT
+
+def sign_payload(payload_json):
+    sig = hmac.new(_FALLBACK_HMAC_KEY, payload_json.encode('utf-8'), hashlib.sha256).digest()
+    return base64.b64encode(sig).decode('ascii')
+
+def generate_nonce():
+    return f'''{int(time.time() * 1000)}-{secrets.token_hex(16)}'''
+
+# rate_limit_wait(): pycdc failed, showing bytecode.
+'''
+ 90           0 RESUME                   0
+
+ 92           2 NOP
+
+ 93     >>    4 LOAD_GLOBAL              0 (_fb_rate_lock)
+             14 BEFORE_WITH
+             16 POP_TOP
+
+ 94          18 LOAD_GLOBAL              3 (NULL + time)
+             28 LOAD_ATTR                4 (monotonic)
+             48 CALL                     0
+             56 STORE_FAST               0 (now)
+
+ 95          58 LOAD_GLOBAL              6 (_fb_rate_calls)
+             68 GET_ITER
+             70 LOAD_FAST                1 (t)
+             72 SWAP                     2
+             74 BUILD_LIST               0
+             76 SWAP                     2
+        >>   78 FOR_ITER                13 (to 108)
+             82 STORE_FAST               1 (t)
+             84 LOAD_FAST                0 (now)
+             86 LOAD_FAST                1 (t)
+             88 BINARY_OP               10 (-)
+             92 LOAD_CONST               1 (30)
+             94 COMPARE_OP               2 (<)
+             98 POP_JUMP_IF_TRUE         1 (to 102)
+            100 JUMP_BACKWARD           12 (to 78)
+        >>  102 LOAD_FAST                1 (t)
+            104 LIST_APPEND              2
+            106 JUMP_BACKWARD           15 (to 78)
+        >>  108 END_FOR
+            110 SWAP                     2
+            112 STORE_FAST               1 (t)
+            114 STORE_GLOBAL             3 (_fb_rate_calls)
+
+ 96         116 LOAD_GLOBAL              9 (NULL + len)
+            126 LOAD_GLOBAL              6 (_fb_rate_calls)
+            136 CALL                     1
+            144 LOAD_CONST               2 (4)
+            146 COMPARE_OP               2 (<)
+            150 POP_JUMP_IF_FALSE       31 (to 214)
+
+ 97         152 LOAD_GLOBAL              6 (_fb_rate_calls)
+            162 LOAD_ATTR               11 (NULL|self + append)
+            182 LOAD_FAST                0 (now)
+            184 CALL                     1
+            192 POP_TOP
+
+ 98         194 NOP
+
+ 93         196 LOAD_CONST               0 (None)
+            198 LOAD_CONST               0 (None)
+            200 LOAD_CONST               0 (None)
+            202 CALL                     2
+            210 POP_TOP
+            212 RETURN_CONST             0 (None)
+
+ 96     >>  214 NOP
+
+ 93         216 LOAD_CONST               0 (None)
+            218 LOAD_CONST               0 (None)
+            220 LOAD_CONST               0 (None)
+            222 CALL                     2
+            230 POP_TOP
+
+ 99     >>  232 LOAD_GLOBAL              3 (NULL + time)
+            242 LOAD_ATTR               12 (sleep)
+            262 LOAD_CONST               3 (0.5)
+            264 CALL                     1
+            272 POP_TOP
+
+ 92         274 JUMP_BACKWARD          136 (to 4)
+        >>  276 SWAP                     2
+            278 POP_TOP
+
+ 95         280 SWAP                     2
+            282 STORE_FAST               1 (t)
+            284 RERAISE                  0
+
+ 93     >>  286 PUSH_EXC_INFO
+            288 WITH_EXCEPT_START
+            290 POP_JUMP_IF_TRUE         1 (to 294)
+            292 RERAISE                  2
+        >>  294 POP_TOP
+            296 POP_EXCEPT
+            298 POP_TOP
+            300 POP_TOP
+            302 JUMP_BACKWARD           36 (to 232)
+        >>  304 COPY                     3
+            306 POP_EXCEPT
+            308 RERAISE                  1
+ExceptionTable:
+  16 to 72 -> 286 [1] lasti
+  74 to 98 -> 276 [3]
+  102 to 108 -> 276 [3]
+  110 to 194 -> 286 [1] lasti
+  276 to 284 -> 286 [1] lasti
+  286 to 294 -> 304 [3] lasti
+'''
+
+def _fb_json_default(obj):
+    if isinstance(obj, (bytes, bytearray)):
+    
+        try:
+            return obj.decode('utf-8', errors = 'replace')
+            if isinstance(obj, set):
+                return list(obj)
+        
+            try:
+                return str(obj)
+                except Exception:
+                    return 
+            except Exception:
+                return None
+
+# _fb_sanitize_for_json(obj): pycdc failed, showing bytecode.
+'''
+114           0 RESUME                   0
+
+115           2 LOAD_GLOBAL              1 (NULL + isinstance)
+             12 LOAD_FAST                0 (obj)
+             14 LOAD_GLOBAL              2 (dict)
+             24 CALL                     2
+             32 POP_JUMP_IF_FALSE       71 (to 176)
+
+116          34 BUILD_MAP                0
+             36 STORE_FAST               1 (clean)
+
+117          38 LOAD_FAST                0 (obj)
+             40 LOAD_ATTR                5 (NULL|self + items)
+             60 CALL                     0
+             68 GET_ITER
+        >>   70 FOR_ITER                48 (to 170)
+             74 UNPACK_SEQUENCE          2
+             78 STORE_FAST               2 (k)
+             80 STORE_FAST               3 (v)
+
+118          82 LOAD_GLOBAL              1 (NULL + isinstance)
+             92 LOAD_FAST                2 (k)
+             94 LOAD_GLOBAL              6 (str)
+            104 CALL                     2
+            112 POP_JUMP_IF_FALSE        2 (to 118)
+            114 LOAD_FAST                2 (k)
+            116 JUMP_FORWARD            10 (to 138)
+        >>  118 LOAD_GLOBAL              7 (NULL + str)
+            128 LOAD_FAST                2 (k)
+            130 CALL                     1
+        >>  138 STORE_FAST               4 (key)
+
+119         140 LOAD_GLOBAL              9 (NULL + _fb_sanitize_for_json)
+            150 LOAD_FAST                3 (v)
+            152 CALL                     1
+            160 LOAD_FAST                1 (clean)
+            162 LOAD_FAST                4 (key)
+            164 STORE_SUBSCR
+            168 JUMP_BACKWARD           50 (to 70)
+
+117     >>  170 END_FOR
+
+120         172 LOAD_FAST                1 (clean)
+            174 RETURN_VALUE
+
+121     >>  176 LOAD_GLOBAL              1 (NULL + isinstance)
+            186 LOAD_FAST                0 (obj)
+            188 LOAD_GLOBAL             10 (list)
+            198 LOAD_GLOBAL             12 (tuple)
+            208 BUILD_TUPLE              2
+            210 CALL                     2
+            218 POP_JUMP_IF_FALSE       25 (to 270)
+
+122         220 LOAD_FAST                0 (obj)
+            222 GET_ITER
+            224 LOAD_FAST                3 (v)
+            226 SWAP                     2
+            228 BUILD_LIST               0
+            230 SWAP                     2
+        >>  232 FOR_ITER                13 (to 262)
+            236 STORE_FAST               3 (v)
+            238 LOAD_GLOBAL              9 (NULL + _fb_sanitize_for_json)
+            248 LOAD_FAST                3 (v)
+            250 CALL                     1
+            258 LIST_APPEND              2
+            260 JUMP_BACKWARD           15 (to 232)
+        >>  262 END_FOR
+            264 SWAP                     2
+            266 STORE_FAST               3 (v)
+            268 RETURN_VALUE
+
+123     >>  270 LOAD_GLOBAL              1 (NULL + isinstance)
+            280 LOAD_FAST                0 (obj)
+            282 LOAD_GLOBAL             14 (float)
+            292 CALL                     2
+            300 POP_JUMP_IF_FALSE       32 (to 366)
+
+124         302 LOAD_FAST                0 (obj)
+            304 LOAD_FAST                0 (obj)
+            306 COMPARE_OP              55 (!=)
+            310 POP_JUMP_IF_TRUE        24 (to 360)
+            312 LOAD_FAST                0 (obj)
+            314 LOAD_GLOBAL             15 (NULL + float)
+            324 LOAD_CONST               1 ('inf')
+            326 CALL                     1
+            334 LOAD_GLOBAL             15 (NULL + float)
+            344 LOAD_CONST               2 ('-inf')
+            346 CALL                     1
+            354 BUILD_TUPLE              2
+            356 CONTAINS_OP              0
+            358 POP_JUMP_IF_FALSE        1 (to 362)
+
+125     >>  360 RETURN_CONST             0 (None)
+
+126     >>  362 LOAD_FAST                0 (obj)
+            364 RETURN_VALUE
+
+127     >>  366 LOAD_GLOBAL              1 (NULL + isinstance)
+            376 LOAD_FAST                0 (obj)
+            378 LOAD_GLOBAL              6 (str)
+            388 LOAD_GLOBAL             16 (int)
+            398 LOAD_GLOBAL             18 (bool)
+            408 BUILD_TUPLE              3
+            410 CALL                     2
+            418 POP_JUMP_IF_TRUE         2 (to 424)
+            420 LOAD_FAST                0 (obj)
+            422 POP_JUMP_IF_NOT_NONE     2 (to 428)
+
+128     >>  424 LOAD_FAST                0 (obj)
+            426 RETURN_VALUE
+
+129     >>  428 LOAD_GLOBAL             21 (NULL + _fb_json_default)
+            438 LOAD_FAST                0 (obj)
+            440 CALL                     1
+            448 RETURN_VALUE
+        >>  450 SWAP                     2
+            452 POP_TOP
+
+122         454 SWAP                     2
+            456 STORE_FAST               3 (v)
+            458 RERAISE                  0
+ExceptionTable:
+  228 to 262 -> 450 [2]
+'''
+
+def secure_post(url, payload, timeout):
+    pass
+
+def sha256_of_file(path, block_size):
+    try:
+        h = hashlib.sha256()
+        f = open(path, 'rb')
+        for block in None((lambda : f.read(block_size)), b''):
+            h.update(block)
+    
+        try:
+            None(None, None)
+            return h.hexdigest()
+            with None:
+                if not None:
+                    pass
+        
+            try:
+                continue
+            except Exception:
+                return None
+
+def _normalize(s):
+    if not s:
+        s
+    return ''.lower()
+
+def _ps_query(command):
+    try:
+        out = subprocess.check_output([
+            'powershell',
+            '-NoProfile',
+            '-Command',
+            command], text = True, encoding = 'utf-8', stderr = subprocess.DEVNULL)
+        return out.strip()
+    except Exception:
+        return None
+
+def collect_process_metadata(proc):
+    try:
+        info = proc.as_dict(attrs = [
+            'pid',
+            'name',
+            'exe',
+            'cmdline',
+            'cwd',
+            'username',
+            'num_threads',
+            'create_time'])
+        if not info.get('name'):
+            info.get('name')
+        proc_name = ''.lower()
+        if proc_name in _WHITELIST_LOWER:
+            return None
+        meta = {
+            'pid': info.get('pid'),
+            'name': info.get('name'),
+            'exe': info.get('exe'),
+            'cwd': info.get('cwd'),
+            'username': info.get('username'),
+            'num_threads': info.get('num_threads'),
+            'create_time': None,
+            'file_size': None,
+            'sha256': None,
+            'suspicious_reasons': [] }
+    
+        try:
+            ct = info.get('create_time')
+            if ct:
+                meta['create_time'] = datetime.fromtimestamp(ct, timezone.utc).isoformat()
+            if not meta.get('exe'):
+                meta.get('exe')
+            exe = ''
+            if exe and os.path.isfile(exe):
+                meta['file_size'] = os.path.getsize(exe)
+                meta['sha256'] = sha256_of_file(exe)
+            lname = _normalize(meta.get('name'))
+            lex = exe.lower()
+            for pat in NAME_BLACKLIST_PATTERNS:
+                if not pat in lname and pat in lex:
+                    if not meta.get('cmdline'):
+                        continue
+                    if not (lambda .0 = None: for pat in .0:
+    pat in str(meta['cmdline']).lower().0)(NAME_BLACKLIST_PATTERNS()):
+                        continue
+                meta['suspicious_reasons'].append(f'''name_match:{pat}''')
+            if (lambda .0 = None: for k in .0:
+    k in lex.0)(('\\temp\\', '\\appdata\\', '\\local\\temp\\')()):
+                meta['suspicious_reasons'].append('exe_in_temp_or_appdata')
+            if meta.get('sha256') in HASH_BLACKLIST:
+                meta['suspicious_reasons'].append('hash_blacklist:' + HASH_BLACKLIST[meta['sha256']])
+            return meta
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                return None
+        except Exception:
+            continue
+
+def collect_process_evidence():
+    evidence = {
+        'timestamp': int(time.time()),
+        'processes': [] }
+    for proc in psutil.process_iter([
+        'pid',
+        'name',
+        'exe',
+        'cmdline',
+        'cwd',
+        'username',
+        'num_threads',
+        'create_time']):
+        meta = collect_process_metadata(proc)
+        if not meta:
+            continue
+        if not meta['suspicious_reasons']:
+            continue
+        evidence['processes'].append(meta)
+    return evidence
+
+# detect_vpn(): pycdc failed, showing bytecode.
+'''
+              0 MAKE_CELL                7 (ln)
+              2 MAKE_CELL                9 (exe)
+              4 MAKE_CELL               10 (ifname)
+              6 MAKE_CELL               11 (name)
+
+309           8 RESUME                   0
+
+310          10 BUILD_LIST               0
+             12 BUILD_LIST               0
+             14 BUILD_LIST               0
+             16 LOAD_CONST               1 (('vpn_processes', 'vpn_interfaces', 'raw_ipconfig_matches'))
+             18 BUILD_CONST_KEY_MAP      3
+             20 STORE_FAST               0 (result)
+
+311          22 LOAD_GLOBAL              1 (NULL + psutil)
+             32 LOAD_ATTR                2 (process_iter)
+             52 BUILD_LIST               0
+             54 LOAD_CONST               2 (('pid', 'name', 'exe'))
+             56 LIST_EXTEND              1
+             58 CALL                     1
+             66 GET_ITER
+        >>   68 FOR_ITER               162 (to 396)
+             72 STORE_FAST               1 (proc)
+
+312          74 NOP
+
+313          76 LOAD_FAST                1 (proc)
+             78 LOAD_ATTR                4 (info)
+             98 LOAD_ATTR                7 (NULL|self + get)
+            118 LOAD_CONST               3 ('name')
+            120 CALL                     1
+            128 COPY                     1
+            130 POP_JUMP_IF_TRUE         2 (to 136)
+            132 POP_TOP
+            134 LOAD_CONST               4 ('')
+        >>  136 STORE_DEREF             11 (name)
+
+314         138 LOAD_FAST                1 (proc)
+            140 LOAD_ATTR                4 (info)
+            160 LOAD_ATTR                7 (NULL|self + get)
+            180 LOAD_CONST               5 ('exe')
+            182 CALL                     1
+            190 COPY                     1
+            192 POP_JUMP_IF_TRUE         2 (to 198)
+            194 POP_TOP
+            196 LOAD_CONST               4 ('')
+        >>  198 STORE_DEREF              9 (exe)
+
+315         200 LOAD_GLOBAL              9 (NULL + any)
+            210 LOAD_CLOSURE            11 (name)
+            212 BUILD_TUPLE              1
+            214 LOAD_CONST               6 (<code object <genexpr> at 0x000002269AE6F530, file "dtabroom.py", line 315>)
+            216 MAKE_FUNCTION            8 (closure)
+            218 LOAD_GLOBAL             10 (VPN_PROCESS_NAMES)
+            228 GET_ITER
+            230 CALL                     0
+            238 CALL                     1
+            246 POP_JUMP_IF_TRUE        24 (to 296)
+            248 LOAD_GLOBAL              9 (NULL + any)
+            258 LOAD_CLOSURE             9 (exe)
+            260 BUILD_TUPLE              1
+            262 LOAD_CONST               7 (<code object <genexpr> at 0x000002269AE6F630, file "dtabroom.py", line 315>)
+            264 MAKE_FUNCTION            8 (closure)
+            266 LOAD_GLOBAL             10 (VPN_PROCESS_NAMES)
+            276 GET_ITER
+            278 CALL                     0
+            286 CALL                     1
+            294 POP_JUMP_IF_FALSE       49 (to 394)
+
+316     >>  296 LOAD_FAST                0 (result)
+            298 LOAD_CONST               8 ('vpn_processes')
+            300 BINARY_SUBSCR
+            304 LOAD_ATTR               13 (NULL|self + append)
+            324 LOAD_FAST                1 (proc)
+            326 LOAD_ATTR                4 (info)
+            346 LOAD_ATTR                7 (NULL|self + get)
+            366 LOAD_CONST               9 ('pid')
+            368 CALL                     1
+            376 LOAD_DEREF              11 (name)
+            378 LOAD_DEREF               9 (exe)
+            380 LOAD_CONST               2 (('pid', 'name', 'exe'))
+            382 BUILD_CONST_KEY_MAP      3
+            384 CALL                     1
+            392 POP_TOP
+        >>  394 JUMP_BACKWARD          164 (to 68)
+
+311     >>  396 END_FOR
+
+319         398 NOP
+
+320         400 LOAD_GLOBAL              1 (NULL + psutil)
+            410 LOAD_ATTR               18 (net_if_addrs)
+            430 CALL                     0
+            438 STORE_FAST               2 (if_addrs)
+
+321         440 LOAD_FAST                2 (if_addrs)
+            442 LOAD_ATTR               21 (NULL|self + items)
+            462 CALL                     0
+            470 GET_ITER
+        >>  472 FOR_ITER                86 (to 648)
+            476 UNPACK_SEQUENCE          2
+            480 STORE_DEREF             10 (ifname)
+            482 STORE_FAST               3 (addrs)
+
+322         484 LOAD_GLOBAL              9 (NULL + any)
+            494 LOAD_CLOSURE            10 (ifname)
+            496 BUILD_TUPLE              1
+            498 LOAD_CONST              10 (<code object <genexpr> at 0x000002269AE6F730, file "dtabroom.py", line 322>)
+            500 MAKE_FUNCTION            8 (closure)
+            502 LOAD_GLOBAL             22 (VPN_INTERFACE_PATTERNS)
+            512 GET_ITER
+            514 CALL                     0
+            522 CALL                     1
+            530 POP_JUMP_IF_TRUE         1 (to 534)
+            532 JUMP_BACKWARD           31 (to 472)
+
+323     >>  534 LOAD_FAST                0 (result)
+            536 LOAD_CONST              11 ('vpn_interfaces')
+            538 BINARY_SUBSCR
+            542 LOAD_ATTR               13 (NULL|self + append)
+            562 LOAD_DEREF              10 (ifname)
+            564 LOAD_FAST                3 (addrs)
+            566 GET_ITER
+            568 LOAD_FAST                4 (a)
+            570 SWAP                     2
+            572 BUILD_LIST               0
+            574 SWAP                     2
+        >>  576 FOR_ITER                23 (to 626)
+            580 STORE_FAST               4 (a)
+            582 LOAD_GLOBAL             25 (NULL + str)
+            592 LOAD_FAST                4 (a)
+            594 LOAD_ATTR               26 (address)
+            614 CALL                     1
+            622 LIST_APPEND              2
+            624 JUMP_BACKWARD           25 (to 576)
+        >>  626 END_FOR
+            628 SWAP                     2
+            630 STORE_FAST               4 (a)
+            632 LOAD_CONST              12 (('ifname', 'addrs'))
+            634 BUILD_CONST_KEY_MAP      2
+            636 CALL                     1
+            644 POP_TOP
+            646 JUMP_BACKWARD           88 (to 472)
+
+321     >>  648 END_FOR
+            650 NOP
+
+326     >>  652 LOAD_GLOBAL             31 (NULL + platform)
+            662 LOAD_ATTR               32 (system)
+            682 CALL                     0
+            690 LOAD_ATTR               35 (NULL|self + lower)
+            710 CALL                     0
+            718 LOAD_CONST              13 ('windows')
+            720 COMPARE_OP              40 (==)
+            724 POP_JUMP_IF_FALSE      117 (to 960)
+
+327         726 NOP
+
+328         728 LOAD_GLOBAL             37 (NULL + subprocess)
+            738 LOAD_ATTR               38 (check_output)
+            758 LOAD_CONST              14 ('ipconfig')
+            760 LOAD_CONST              15 ('/all')
+            762 BUILD_LIST               2
+            764 LOAD_GLOBAL             36 (subprocess)
+            774 LOAD_ATTR               40 (DEVNULL)
+            794 LOAD_CONST              16 (True)
+            796 LOAD_CONST              17 ('utf-8')
+            798 LOAD_CONST              18 ('ignore')
+            800 KW_NAMES                19 (('stderr', 'text', 'encoding', 'errors'))
+            802 CALL                     5
+            810 STORE_FAST               5 (out)
+
+329         812 LOAD_FAST                5 (out)
+            814 LOAD_ATTR               43 (NULL|self + splitlines)
+            834 CALL                     0
+            842 STORE_FAST               6 (lines)
+
+330         844 LOAD_FAST                6 (lines)
+            846 GET_ITER
+            848 LOAD_FAST                7 (ln)
+            850 MAKE_CELL                7 (ln)
+            852 SWAP                     2
+            854 BUILD_LIST               0
+            856 SWAP                     2
+        >>  858 FOR_ITER                39 (to 940)
+            862 STORE_DEREF              7 (ln)
+            864 LOAD_GLOBAL              9 (NULL + any)
+            874 LOAD_CLOSURE             7 (ln)
+            876 BUILD_TUPLE              1
+            878 LOAD_CONST              20 (<code object <genexpr> at 0x000002269AE99790, file "dtabroom.py", line 330>)
+            880 MAKE_FUNCTION            8 (closure)
+            882 LOAD_CONST              21 (('tunnel adapter', 'tap-windows', 'ppp adapter', 'wireguard', 'wire guard', 'virtual', 'vpn'))
+            884 GET_ITER
+            886 CALL                     0
+            894 CALL                     1
+            902 POP_JUMP_IF_TRUE         1 (to 906)
+            904 JUMP_BACKWARD           24 (to 858)
+        >>  906 LOAD_DEREF               7 (ln)
+            908 LOAD_ATTR               45 (NULL|self + strip)
+            928 CALL                     0
+            936 LIST_APPEND              2
+            938 JUMP_BACKWARD           41 (to 858)
+        >>  940 END_FOR
+            942 STORE_FAST               8 (suspicious_lines)
+            944 STORE_FAST               7 (ln)
+
+331         946 LOAD_FAST                8 (suspicious_lines)
+            948 LOAD_FAST                0 (result)
+            950 LOAD_CONST              22 ('raw_ipconfig_matches')
+            952 STORE_SUBSCR
+
+334         956 LOAD_FAST                0 (result)
+            958 RETURN_VALUE
+        >>  960 LOAD_FAST                0 (result)
+            962 RETURN_VALUE
+        >>  964 PUSH_EXC_INFO
+
+317         966 LOAD_GLOBAL              0 (psutil)
+            976 LOAD_ATTR               14 (NoSuchProcess)
+            996 LOAD_GLOBAL              0 (psutil)
+           1006 LOAD_ATTR               16 (AccessDenied)
+           1026 BUILD_TUPLE              2
+           1028 CHECK_EXC_MATCH
+           1030 POP_JUMP_IF_FALSE        4 (to 1040)
+           1032 POP_TOP
+
+318        1034 POP_EXCEPT
+           1036 EXTENDED_ARG             1
+           1038 JUMP_BACKWARD          486 (to 68)
+
+317     >> 1040 RERAISE                  0
+        >> 1042 COPY                     3
+           1044 POP_EXCEPT
+           1046 RERAISE                  1
+        >> 1048 SWAP                     2
+           1050 POP_TOP
+
+323        1052 SWAP                     2
+           1054 STORE_FAST               4 (a)
+           1056 RERAISE                  0
+        >> 1058 PUSH_EXC_INFO
+
+324        1060 LOAD_GLOBAL             28 (Exception)
+           1070 CHECK_EXC_MATCH
+           1072 POP_JUMP_IF_FALSE        3 (to 1080)
+           1074 POP_TOP
+
+325        1076 POP_EXCEPT
+           1078 JUMP_BACKWARD          214 (to 652)
+
+324     >> 1080 RERAISE                  0
+        >> 1082 COPY                     3
+           1084 POP_EXCEPT
+           1086 RERAISE                  1
+        >> 1088 SWAP                     2
+           1090 POP_TOP
+
+330        1092 SWAP                     2
+           1094 STORE_FAST               7 (ln)
+           1096 RERAISE                  0
+        >> 1098 PUSH_EXC_INFO
+
+332        1100 LOAD_GLOBAL             28 (Exception)
+           1110 CHECK_EXC_MATCH
+           1112 POP_JUMP_IF_FALSE        4 (to 1122)
+           1114 POP_TOP
+
+333        1116 POP_EXCEPT
+
+334        1118 LOAD_FAST                0 (result)
+           1120 RETURN_VALUE
+
+332     >> 1122 RERAISE                  0
+        >> 1124 COPY                     3
+           1126 POP_EXCEPT
+           1128 RERAISE                  1
+ExceptionTable:
+  76 to 392 -> 964 [1]
+  400 to 530 -> 1058 [0]
+  534 to 570 -> 1058 [0]
+  572 to 626 -> 1048 [6]
+  628 to 648 -> 1058 [0]
+  728 to 852 -> 1098 [0]
+  854 to 902 -> 1088 [2]
+  906 to 940 -> 1088 [2]
+  942 to 954 -> 1098 [0]
+  964 to 1032 -> 1042 [2] lasti
+  1040 to 1040 -> 1042 [2] lasti
+  1048 to 1056 -> 1058 [0]
+  1058 to 1074 -> 1082 [1] lasti
+  1080 to 1080 -> 1082 [1] lasti
+  1088 to 1096 -> 1098 [0]
+  1098 to 1114 -> 1124 [1] lasti
+  1122 to 1122 -> 1124 [1] lasti
+
+Disassembly of <code object <genexpr> at 0x000002269AE6F530, file "dtabroom.py", line 315>:
+              0 COPY_FREE_VARS           1
+
+315           2 RETURN_GENERATOR
+              4 POP_TOP
+              6 RESUME                   0
+              8 LOAD_FAST                0 (.0)
+        >>   10 FOR_ITER                17 (to 48)
+             14 STORE_FAST               1 (v)
+             16 LOAD_FAST                1 (v)
+             18 LOAD_GLOBAL              1 (NULL + _normalize)
+             28 LOAD_DEREF               2 (name)
+             30 CALL                     1
+             38 CONTAINS_OP              0
+             40 YIELD_VALUE              1
+             42 RESUME                   1
+             44 POP_TOP
+             46 JUMP_BACKWARD           19 (to 10)
+        >>   48 END_FOR
+             50 RETURN_CONST             0 (None)
+        >>   52 CALL_INTRINSIC_1         3 (INTRINSIC_STOPITERATION_ERROR)
+             54 RERAISE                  1
+ExceptionTable:
+  6 to 50 -> 52 [0] lasti
+
+Disassembly of <code object <genexpr> at 0x000002269AE6F630, file "dtabroom.py", line 315>:
+              0 COPY_FREE_VARS           1
+
+315           2 RETURN_GENERATOR
+              4 POP_TOP
+              6 RESUME                   0
+              8 LOAD_FAST                0 (.0)
+        >>   10 FOR_ITER                17 (to 48)
+             14 STORE_FAST               1 (v)
+             16 LOAD_FAST                1 (v)
+             18 LOAD_GLOBAL              1 (NULL + _normalize)
+             28 LOAD_DEREF               2 (exe)
+             30 CALL                     1
+             38 CONTAINS_OP              0
+             40 YIELD_VALUE              1
+             42 RESUME                   1
+             44 POP_TOP
+             46 JUMP_BACKWARD           19 (to 10)
+        >>   48 END_FOR
+             50 RETURN_CONST             0 (None)
+        >>   52 CALL_INTRINSIC_1         3 (INTRINSIC_STOPITERATION_ERROR)
+             54 RERAISE                  1
+ExceptionTable:
+  6 to 50 -> 52 [0] lasti
+
+Disassembly of <code object <genexpr> at 0x000002269AE6F730, file "dtabroom.py", line 322>:
+              0 COPY_FREE_VARS           1
+
+322           2 RETURN_GENERATOR
+              4 POP_TOP
+              6 RESUME                   0
+              8 LOAD_FAST                0 (.0)
+        >>   10 FOR_ITER                17 (to 48)
+             14 STORE_FAST               1 (pat)
+             16 LOAD_FAST                1 (pat)
+             18 LOAD_GLOBAL              1 (NULL + _normalize)
+             28 LOAD_DEREF               2 (ifname)
+             30 CALL                     1
+             38 CONTAINS_OP              0
+             40 YIELD_VALUE              1
+             42 RESUME                   1
+             44 POP_TOP
+             46 JUMP_BACKWARD           19 (to 10)
+        >>   48 END_FOR
+             50 RETURN_CONST             0 (None)
+        >>   52 CALL_INTRINSIC_1         3 (INTRINSIC_STOPITERATION_ERROR)
+             54 RERAISE                  1
+ExceptionTable:
+  6 to 50 -> 52 [0] lasti
+
+Disassembly of <code object <genexpr> at 0x000002269AE99790, file "dtabroom.py", line 330>:
+              0 COPY_FREE_VARS           1
+
+330           2 RETURN_GENERATOR
+              4 POP_TOP
+              6 RESUME                   0
+              8 LOAD_FAST                0 (.0)
+        >>   10 FOR_ITER                22 (to 58)
+             14 STORE_FAST               1 (k)
+             16 LOAD_FAST                1 (k)
+             18 LOAD_DEREF               2 (ln)
+             20 LOAD_ATTR                1 (NULL|self + lower)
+             40 CALL                     0
+             48 CONTAINS_OP              0
+             50 YIELD_VALUE              1
+             52 RESUME                   1
+             54 POP_TOP
+             56 JUMP_BACKWARD           24 (to 10)
+        >>   58 END_FOR
+             60 RETURN_CONST             0 (None)
+        >>   62 CALL_INTRINSIC_1         3 (INTRINSIC_STOPITERATION_ERROR)
+             64 RERAISE                  1
+ExceptionTable:
+  6 to 60 -> 62 [0] lasti
+'''
+
+# _get_primary_mac_prefix(): pycdc failed, showing bytecode.
+'''
+339           0 RESUME                   0
+
+340           2 NOP
+
+341           4 LOAD_GLOBAL              1 (NULL + psutil)
+             14 LOAD_ATTR                2 (net_if_addrs)
+             34 CALL                     0
+             42 STORE_FAST               0 (if_addrs)
+
+342          44 LOAD_FAST                0 (if_addrs)
+             46 LOAD_ATTR                5 (NULL|self + items)
+             66 CALL                     0
+             74 GET_ITER
+        >>   76 FOR_ITER               103 (to 286)
+             80 UNPACK_SEQUENCE          2
+             84 STORE_FAST               1 (ifname)
+             86 STORE_FAST               2 (addrs)
+
+343          88 LOAD_FAST                2 (addrs)
+             90 GET_ITER
+        >>   92 FOR_ITER                93 (to 282)
+             96 STORE_FAST               3 (a)
+
+344          98 LOAD_GLOBAL              7 (NULL + hasattr)
+            108 LOAD_FAST                3 (a)
+            110 LOAD_CONST               1 ('address')
+            112 CALL                     2
+            120 POP_JUMP_IF_TRUE         1 (to 124)
+            122 JUMP_BACKWARD           16 (to 92)
+        >>  124 LOAD_FAST                3 (a)
+            126 LOAD_ATTR                8 (address)
+            146 POP_JUMP_IF_TRUE         1 (to 150)
+            148 JUMP_BACKWARD           29 (to 92)
+        >>  150 LOAD_CONST               2 (':')
+            152 LOAD_FAST                3 (a)
+            154 LOAD_ATTR                8 (address)
+            174 CONTAINS_OP              0
+            176 POP_JUMP_IF_TRUE         1 (to 180)
+            178 JUMP_BACKWARD           44 (to 92)
+
+345     >>  180 LOAD_FAST                3 (a)
+            182 LOAD_ATTR                8 (address)
+            202 LOAD_ATTR               11 (NULL|self + replace)
+            222 LOAD_CONST               2 (':')
+            224 LOAD_CONST               3 ('')
+            226 CALL                     2
+            234 LOAD_ATTR               13 (NULL|self + lower)
+            254 CALL                     0
+            262 STORE_FAST               4 (mac)
+
+346         264 LOAD_FAST                4 (mac)
+            266 LOAD_CONST               0 (None)
+            268 LOAD_CONST               4 (6)
+            270 BINARY_SLICE
+            272 SWAP                     2
+            274 POP_TOP
+            276 SWAP                     2
+            278 POP_TOP
+            280 RETURN_VALUE
+
+343     >>  282 END_FOR
+            284 JUMP_BACKWARD          105 (to 76)
+
+342     >>  286 END_FOR
+
+347         288 LOAD_CONST               5 (0)
+            290 LOAD_CONST               0 (None)
+            292 IMPORT_NAME              7 (uuid)
+            294 STORE_FAST               5 (uuid)
+
+348         296 LOAD_FAST                5 (uuid)
+            298 LOAD_ATTR               17 (NULL|self + getnode)
+            318 CALL                     0
+            326 LOAD_CONST               6 ('012x')
+            328 FORMAT_VALUE             4 (with format)
+            330 STORE_FAST               4 (mac)
+
+349         332 LOAD_FAST                4 (mac)
+            334 LOAD_CONST               0 (None)
+            336 LOAD_CONST               4 (6)
+            338 BINARY_SLICE
+            340 RETURN_VALUE
+        >>  342 PUSH_EXC_INFO
+
+350         344 LOAD_GLOBAL             18 (Exception)
+            354 CHECK_EXC_MATCH
+            356 POP_JUMP_IF_FALSE        3 (to 364)
+            358 POP_TOP
+
+351         360 POP_EXCEPT
+            362 RETURN_CONST             0 (None)
+
+350     >>  364 RERAISE                  0
+        >>  366 COPY                     3
+            368 POP_EXCEPT
+            370 RERAISE                  1
+ExceptionTable:
+  4 to 120 -> 342 [0]
+  124 to 146 -> 342 [0]
+  150 to 176 -> 342 [0]
+  180 to 278 -> 342 [0]
+  282 to 338 -> 342 [0]
+  342 to 358 -> 366 [1] lasti
+  364 to 364 -> 366 [1] lasti
+'''
+
+def detect_vm():
+    result = {
+        'vm_processes': [],
+        'wmic_flags': [],
+        'mac_match': False,
+        'wmic_raw': None }
+    for proc in psutil.process_iter([
+        'pid',
+        'name',
+        'exe']):
+        if not proc.info.get('name'):
+            proc.info.get('name')
+        name = ''
+        if not proc.info.get('exe'):
+            proc.info.get('exe')
+        exe = ''
+        if (lambda .0 = None: for v in .0:
+    v in _normalize(name).0)(VM_PROCESS_NAMES()) or (lambda .0 = None: for v in .0:
+    v in _normalize(exe).0)(VM_PROCESS_NAMES()):
+            result['vm_processes'].append({
+                'pid': proc.info.get('pid'),
+                'name': name,
+                'exe': exe })
+    continue
+    if platform.system().lower() == 'windows':
+    
+        try:
+            out = _ps_query('$cs = Get-CimInstance Win32_ComputerSystem; "$($cs.Manufacturer) $($cs.Model)"')
+            if out:
+                result['wmic_raw'] = out
+                if (lambda .0 = None: for k in .0:
+    k in out.lower().0)(('vmware', 'virtualbox', 'vbox', 'qemu', 'xen', 'hyper-v', 'microsoft corporation')()):
+                    result['wmic_flags'].append(out)
+            prefix = _get_primary_mac_prefix()
+            if prefix and prefix.lower() in VM_MAC_PREFIXES:
+                result['mac_match'] = True
+                result['mac_prefix'] = prefix
+            return result
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        except Exception:
+            continue
+
+def is_self_running_in_vm():
+    reasons = []
+    if platform.system().lower() == 'windows':
+    
+        try:
+            out = _ps_query('$cs = Get-CimInstance Win32_ComputerSystem; "$($cs.Manufacturer) $($cs.Model)"')
+            if out and (lambda .0 = None: for k in .0:
+    k in out.lower().0)(('vmware', 'virtualbox', 'vbox', 'qemu', 'xen', 'hyper-v', 'microsoft corporation')()):
+                reasons.append({
+                    'wmic': out })
+            prefix = _get_primary_mac_prefix()
+            if prefix and prefix.lower() in VM_MAC_PREFIXES:
+                reasons.append({
+                    'mac_prefix': prefix })
+            vm_procs = []
+            for proc in psutil.process_iter([
+                'name',
+                'exe']):
+                if not proc.info.get('name'):
+                    proc.info.get('name')
+                name = ''
+                if not proc.info.get('exe'):
+                    proc.info.get('exe')
+                exe = ''
+                if (lambda .0 = None: for v in .0:
+    v in _normalize(name).0)(VM_PROCESS_NAMES()) or (lambda .0 = None: for v in .0:
+    v in _normalize(exe).0)(VM_PROCESS_NAMES()):
+                    vm_procs.append({
+                        'name': name,
+                        'exe': exe })
+            continue
+            if vm_procs:
+                reasons.append({
+                    'vm_processes': vm_procs })
+            return {
+                'is_vm': bool(reasons),
+                'reasons': reasons }
+        except Exception:
+            continue
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+def build_report(username, match_id, team_id):
+    evidence = collect_process_evidence()
+    vpn = detect_vpn()
+    vm = detect_vm()
+    self_vm = is_self_running_in_vm()
+    report = {
+        'username': username,
+        'match_id': match_id,
+        'team': team_id,
+        'evidence': evidence,
+        'vpn': vpn,
+        'vm': vm,
+        'self_vm': self_vm,
+        'client_timestamp': int(time.time()),
+        'client_time_iso': datetime.now(timezone.utc).isoformat() }
+    return report
+
+def _map_http_error(status_code, attempt):
+    if status_code == 200:
+        return _ERR_OK
+    if None == 400:
+        if attempt == 1:
+            return _ERR_REPORT_400_TRY1
+        return None
+    if None in (401, 403):
+        return _ERR_REPORT_AUTH
+    if None == 429:
+        return _ERR_REPORT_RATE
+    if not status_code:
+        status_code
+    if  <= None, 0 or None, 0 < 600:
+        return _ERR_REPORT_5XX
+    return _ERR_REPORT_OTHER
+    return _ERR_REPORT_OTHER
+
+# send_report(payload): pycdc failed, showing bytecode.
+'''
+477           0 RESUME                   0
+
+483           2 LOAD_CONST               1 ((None, None))
+              4 UNPACK_SEQUENCE          2
+              8 STORE_FAST               1 (last_status)
+             10 STORE_FAST               2 (last_text)
+
+484          12 LOAD_CONST               2 ((1, 2))
+             14 GET_ITER
+        >>   16 FOR_ITER               163 (to 346)
+             20 STORE_FAST               3 (attempt)
+
+485          22 NOP
+
+486          24 LOAD_GLOBAL              1 (NULL + secure_post)
+             34 LOAD_GLOBAL              2 (SERVER_ENDPOINT)
+             44 LOAD_CONST               3 ('/insert_log')
+             46 BINARY_OP                0 (+)
+             50 LOAD_FAST                0 (payload)
+             52 CALL                     2
+             60 STORE_FAST               4 (resp)
+
+487          62 LOAD_FAST                4 (resp)
+             64 LOAD_ATTR                4 (status_code)
+             84 LOAD_FAST                4 (resp)
+             86 LOAD_ATTR                6 (text)
+            106 STORE_FAST               2 (last_text)
+            108 STORE_FAST               1 (last_status)
+
+488         110 LOAD_FAST                4 (resp)
+            112 LOAD_ATTR                4 (status_code)
+            132 LOAD_CONST               4 (200)
+            134 COMPARE_OP              40 (==)
+            138 POP_JUMP_IF_FALSE       32 (to 204)
+
+489         140 LOAD_GLOBAL              8 (logger)
+            150 LOAD_ATTR               11 (NULL|self + info)
+            170 LOAD_CONST               5 ('Report %s')
+            172 LOAD_GLOBAL             12 (_ERR_OK)
+            182 CALL                     2
+            190 POP_TOP
+
+490         192 LOAD_FAST                1 (last_status)
+            194 LOAD_FAST                2 (last_text)
+            196 BUILD_TUPLE              2
+            198 SWAP                     2
+            200 POP_TOP
+            202 RETURN_VALUE
+
+491     >>  204 LOAD_GLOBAL             15 (NULL + _map_http_error)
+            214 LOAD_FAST                4 (resp)
+            216 LOAD_ATTR                4 (status_code)
+            236 LOAD_FAST                3 (attempt)
+            238 CALL                     2
+            246 STORE_FAST               5 (code)
+
+492         248 LOAD_GLOBAL              8 (logger)
+            258 LOAD_ATTR               17 (NULL|self + warning)
+            278 LOAD_CONST               5 ('Report %s')
+            280 LOAD_FAST                5 (code)
+            282 CALL                     2
+            290 POP_TOP
+
+495         292 LOAD_FAST                4 (resp)
+            294 LOAD_ATTR                4 (status_code)
+            314 LOAD_CONST               6 (400)
+            316 COMPARE_OP              55 (!=)
+            320 POP_JUMP_IF_TRUE         5 (to 332)
+            322 LOAD_FAST                3 (attempt)
+            324 LOAD_CONST               7 (2)
+            326 COMPARE_OP              40 (==)
+            330 POP_JUMP_IF_FALSE        6 (to 344)
+
+496     >>  332 LOAD_FAST                1 (last_status)
+            334 LOAD_FAST                2 (last_text)
+            336 BUILD_TUPLE              2
+            338 SWAP                     2
+            340 POP_TOP
+            342 RETURN_VALUE
+
+495     >>  344 JUMP_BACKWARD          165 (to 16)
+
+484     >>  346 END_FOR
+
+504         348 LOAD_FAST                1 (last_status)
+            350 LOAD_FAST                2 (last_text)
+            352 BUILD_TUPLE              2
+            354 RETURN_VALUE
+        >>  356 PUSH_EXC_INFO
+
+497         358 LOAD_GLOBAL             18 (Exception)
+            368 CHECK_EXC_MATCH
+            370 POP_JUMP_IF_FALSE       47 (to 466)
+            372 POP_TOP
+
+500         374 LOAD_GLOBAL              8 (logger)
+            384 LOAD_ATTR               17 (NULL|self + warning)
+            404 LOAD_CONST               5 ('Report %s')
+            406 LOAD_GLOBAL             20 (_ERR_REPORT_NETWORK)
+            416 CALL                     2
+            424 POP_TOP
+
+501         426 LOAD_CONST               1 ((None, None))
+            428 UNPACK_SEQUENCE          2
+            432 STORE_FAST               1 (last_status)
+            434 STORE_FAST               2 (last_text)
+
+502         436 LOAD_FAST                3 (attempt)
+            438 LOAD_CONST               7 (2)
+            440 COMPARE_OP              40 (==)
+            444 POP_JUMP_IF_FALSE        8 (to 462)
+
+503         446 LOAD_FAST                1 (last_status)
+            448 LOAD_FAST                2 (last_text)
+            450 BUILD_TUPLE              2
+            452 SWAP                     2
+            454 POP_EXCEPT
+            456 SWAP                     2
+            458 POP_TOP
+            460 RETURN_VALUE
+
+502     >>  462 POP_EXCEPT
+            464 JUMP_BACKWARD          225 (to 16)
+
+497     >>  466 RERAISE                  0
+        >>  468 COPY                     3
+            470 POP_EXCEPT
+            472 RERAISE                  1
+ExceptionTable:
+  24 to 196 -> 356 [1]
+  204 to 336 -> 356 [1]
+  356 to 452 -> 468 [2] lasti
+  466 to 466 -> 468 [2] lasti
+'''
+
+def get_dbd_metadata():
+    dbd_info = {
+        'is_open': False,
+        'pid': None,
+        'name': None,
+        'exe': None,
+        'cmdline': None,
+        'cwd': None,
+        'username': None,
+        'num_threads': None,
+        'create_time': None,
+        'memory_rss': None }
+    for proc in psutil.process_iter([
+        'pid',
+        'name',
+        'exe',
+        'cmdline',
+        'cwd',
+        'username',
+        'num_threads',
+        'create_time']):
+        if not proc.info.get('name'):
+            proc.info.get('name')
+        name = ''
+        if 'deadbydaylight' in name.lower().strip().replace(' ', ''):
+            dbd_info['is_open'] = True
+            dbd_info['pid'] = proc.info.get('pid')
+            dbd_info['name'] = name
+            dbd_info['exe'] = proc.info.get('exe')
+            dbd_info['cmdline'] = proc.info.get('cmdline')
+            dbd_info['cwd'] = proc.info.get('cwd')
+            dbd_info['username'] = proc.info.get('username')
+            dbd_info['num_threads'] = proc.info.get('num_threads')
+            dbd_info['create_time'] = proc.info.get('create_time')
+            dbd_info['memory_rss'] = getattr(proc.memory_info(), 'rss', None)
+            psutil.process_iter([
+                'pid',
+                'name',
+                'exe',
+                'cmdline',
+                'cwd',
+                'username',
+                'num_threads',
+                'create_time'])
+            return dbd_info
+    return dbd_info
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        continue
+
+def _drive_letter_iter():
+    mask = GetLogicalDrives()
+    if mask == 0:
+        return None
+    for i in range(26):
+        if not mask & 1 << i:
+            continue
+        yield chr(ord('A') + i) + ':\\'
+        range(26)
+
+def get_removable_drives_basic():
+    drives = []
+    for root in _drive_letter_iter():
+        dtype = GetDriveTypeW(root)
+        if dtype == DRIVE_REMOVABLE or dtype == DRIVE_FIXED:
+            vol_name_buf = ctypes.create_unicode_buffer(260)
+            fs_buf = ctypes.create_unicode_buffer(260)
+            serial = wintypes.DWORD()
+            max_comp_len = wintypes.DWORD()
+            flags = wintypes.DWORD()
+            success = GetVolumeInformationW(root, vol_name_buf, ctypes.sizeof(vol_name_buf), ctypes.byref(serial), ctypes.byref(max_comp_len), ctypes.byref(flags), fs_buf, ctypes.sizeof(fs_buf))
+            drives.append({
+                'drive': root,
+                'type': int(dtype),
+                'label': vol_name_buf.value if success else None,
+                'fs_type': fs_buf.value if success else None,
+                'serial': f'''{serial.value:08X}''' if success else None,
+                'max_component_len': max_comp_len.value if success else None,
+                'file_flags': flags.value if success else None })
+    continue
+    return drives
+    except Exception:
+        continue
+
+def get_dbd_loaded_dlls():
+    result = {
+        'dbd_found': False,
+        'unknown_dlls': [],
+        'total_dlls': 0 }
+    for proc in psutil.process_iter([
+        'pid',
+        'name']):
+        if not proc.info.get('name'):
+            proc.info.get('name')
+        name = ''
+        if 'deadbydaylight' in name.lower().strip().replace(' ', ''):
+            result['dbd_found'] = True
+            all_dlls = []
+            for mmap in proc.memory_maps(grouped = True):
+                path = mmap.path if hasattr(mmap, 'path') else str(mmap)
+                if not path:
+                    continue
+                if not path.lower().endswith('.dll'):
+                    continue
+                all_dlls.append(path)
+            result['total_dlls'] = len(all_dlls)
+            for dll_path in all_dlls:
+                dll_name = os.path.basename(dll_path).lower()
+                if not dll_name not in DBD_DLL_WHITELIST:
+                    continue
+                result['unknown_dlls'].append(dll_path)
+            return result
+    return result
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        result['unknown_dlls'].append('[ACCESS_DENIED]')
+        return result
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        continue
+
+def detect_suspicious_windows():
+    SUSPICIOUS_WINDOW_PATTERNS = [
+        'aimbot',
+        'esp',
+        'wallhack',
+        'cheat',
+        'hack',
+        'inject',
+        'trainer',
+        'overlay',
+        'radar',
+        'godmode',
+        'speedhack',
+        'ghost',
+        'unlock',
+        'cheatengine',
+        'cheat engine',
+        'ce main',
+        'cola',
+        'coladb',
+        'veterancheats',
+        'cosmo',
+        'ducts',
+        'wallhax',
+        'proaim',
+        'imgui',
+        'd3d',
+        'directx overlay']
+    GWL_EXSTYLE = -20
+    WS_EX_TOPMOST = 8
+    WS_EX_TRANSPARENT = 32
+    WS_EX_LAYERED = 524288
+    windows = []
+    overlay_windows = []
+    EnumWindows = user32.EnumWindows
+    GetWindowTextW = user32.GetWindowTextW
+    GetWindowTextLengthW = user32.GetWindowTextLengthW
+    IsWindowVisible = user32.IsWindowVisible
+    GetWindowLongW = user32.GetWindowLongW
+    GetClassNameW = user32.GetClassNameW
+    WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+
+    def enum_callback(hwnd = None, _lparam = None):
+    
+        try:
+            if not IsWindowVisible(hwnd):
+                return True
+            
+                try:
+                    length = GetWindowTextLengthW(hwnd)
+                    if length > 0:
+                        buf = ctypes.create_unicode_buffer(length + 1)
+                        GetWindowTextW(hwnd, buf, length + 1)
+                        title = buf.value
+                    else:
+                        title = ''
+                    class_buf = ctypes.create_unicode_buffer(256)
+                    GetClassNameW(hwnd, class_buf, 256)
+                    class_name = class_buf.value
+                    ltitle = title.lower()
+                    lclass = class_name.lower()
+                    for pat in SUSPICIOUS_WINDOW_PATTERNS:
+                        if not pat in ltitle and pat in lclass:
+                            continue
+                        
+                            try:
+                                windows.append({
+                                    'title': title,
+                                    'class': class_name,
+                                    'reason': f'''pattern:{pat}''' })
+                                SUSPICIOUS_WINDOW_PATTERNS
+                            ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE)
+                            is_topmost = bool(ex_style & WS_EX_TOPMOST)
+                            is_transparent = bool(ex_style & WS_EX_TRANSPARENT)
+                            is_layered = bool(ex_style & WS_EX_LAYERED)
+                            if is_topmost:
+                                if is_transparent or is_layered:
+                                    overlay_windows.append({
+                                        'title': title,
+                                        'class': class_name,
+                                        'ex_style': hex(ex_style) })
+
+                    return True
+                except Exception:
+                    return True
+
+
+
+
+    try:
+        EnumWindows(WNDENUMPROC(enum_callback), 0)
+        return {
+            'suspicious_windows': windows,
+            'overlay_windows': overlay_windows }
+    except Exception:
+        continue
+
+def get_hardware_fingerprint():
+    fingerprint = {
+        'computer_name': None,
+        'bios_uuid': None,
+        'motherboard_serial': None,
+        'disk_serials': [],
+        'cpu_name': None,
+        'ram_total_gb': None,
+        'os_version': None }
+
+    try:
+        fingerprint['computer_name'] = platform.node()
+    
+        try:
+            fingerprint['os_version'] = platform.platform()
+        
+            try:
+                fingerprint['ram_total_gb'] = round(psutil.virtual_memory().total / 1073741824, 2)
+            
+                try:
+                    out = _ps_query('(Get-CimInstance Win32_ComputerSystemProduct).UUID')
+                    if out:
+                        fingerprint['bios_uuid'] = out
+                
+                    try:
+                        out = _ps_query('(Get-CimInstance Win32_BaseBoard).SerialNumber')
+                        if out:
+                            fingerprint['motherboard_serial'] = out
+                    
+                        try:
+                            out = _ps_query('Get-CimInstance Win32_DiskDrive | ForEach-Object { "$($_.SerialNumber)|$($_.Model)" }')
+                            if out:
+                                for ln in out.splitlines():
+                                    ln = ln.strip()
+                                    if not ln:
+                                        continue
+                                    
+                                        try:
+                                            fingerprint['disk_serials'].append(ln)
+                                            continue
+                                        
+                                            try:
+                                                out = _ps_query('(Get-CimInstance Win32_Processor).Name')
+                                                if out:
+                                                    fingerprint['cpu_name'] = out
+                                                return fingerprint
+                                                except Exception:
+                                                    continue
+                                                except Exception:
+                                                    continue
+                                                except Exception:
+                                                    continue
+                                                except Exception:
+                                                    continue
+                                                except Exception:
+                                                    continue
+                                                except Exception:
+                                                    continue
+                                            except Exception:
+                                                return fingerprint
+
+def detect_debuggers():
+    result = {
+        'debugger_attached': False,
+        'debugger_processes': [] }
+
+    try:
+        result['debugger_attached'] = bool(ctypes.windll.kernel32.IsDebuggerPresent())
+        for proc in psutil.process_iter([
+            'pid',
+            'name',
+            'exe']):
+            if not proc.info.get('name'):
+                proc.info.get('name')
+            name = ''
+            if not proc.info.get('exe'):
+                proc.info.get('exe')
+            exe = ''
+            lname = _normalize(name).replace('.exe', '')
+            lexe = _normalize(exe)
+            for dbg in DEBUGGER_PROCESS_NAMES:
+                if not dbg in lname and dbg in lexe:
+                    continue
+                result['debugger_processes'].append({
+                    'pid': proc.info.get('pid'),
+                    'name': name,
+                    'exe': exe })
+                DEBUGGER_PROCESS_NAMES
+        continue
+        return result
+    except Exception:
+        continue
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+
+# detect_network_suspicious(): pycdc failed, showing bytecode.
+'''
+905           0 RESUME                   0
+
+912           2 BUILD_LIST               0
+
+913           4 BUILD_LIST               0
+
+914           6 LOAD_CONST               1 (0)
+
+911           8 LOAD_CONST               2 (('suspicious_connections', 'remote_access_processes', 'total_established'))
+             10 BUILD_CONST_KEY_MAP      3
+             12 STORE_FAST               0 (result)
+
+918          14 NOP
+
+919          16 LOAD_GLOBAL              1 (NULL + psutil)
+             26 LOAD_ATTR                2 (net_connections)
+             46 LOAD_CONST               3 ('inet')
+             48 KW_NAMES                 4 (('kind',))
+             50 CALL                     1
+             58 STORE_FAST               1 (connections)
+
+920          60 LOAD_FAST                1 (connections)
+             62 GET_ITER
+             64 LOAD_FAST                2 (c)
+             66 SWAP                     2
+             68 BUILD_LIST               0
+             70 SWAP                     2
+        >>   72 FOR_ITER                20 (to 116)
+             76 STORE_FAST               2 (c)
+             78 LOAD_FAST                2 (c)
+             80 LOAD_ATTR                4 (status)
+            100 LOAD_CONST               5 ('ESTABLISHED')
+            102 COMPARE_OP              40 (==)
+            106 POP_JUMP_IF_TRUE         1 (to 110)
+            108 JUMP_BACKWARD           19 (to 72)
+        >>  110 LOAD_FAST                2 (c)
+            112 LIST_APPEND              2
+            114 JUMP_BACKWARD           22 (to 72)
+        >>  116 END_FOR
+            118 STORE_FAST               3 (established)
+            120 STORE_FAST               2 (c)
+
+921         122 LOAD_GLOBAL              7 (NULL + len)
+            132 LOAD_FAST                3 (established)
+            134 CALL                     1
+            142 LOAD_FAST                0 (result)
+            144 LOAD_CONST               6 ('total_established')
+            146 STORE_SUBSCR
+
+923         150 LOAD_FAST                3 (established)
+            152 GET_ITER
+        >>  154 FOR_ITER               160 (to 478)
+            158 STORE_FAST               4 (conn)
+
+924         160 LOAD_FAST                4 (conn)
+            162 LOAD_ATTR                8 (raddr)
+            182 STORE_FAST               5 (raddr)
+
+925         184 LOAD_FAST                5 (raddr)
+            186 POP_JUMP_IF_TRUE         1 (to 190)
+            188 JUMP_BACKWARD           18 (to 154)
+
+926     >>  190 LOAD_FAST                5 (raddr)
+            192 LOAD_ATTR               10 (port)
+            212 STORE_FAST               6 (rport)
+
+927         214 LOAD_FAST                6 (rport)
+            216 LOAD_GLOBAL             12 (SUSPICIOUS_REMOTE_PORTS)
+            226 CONTAINS_OP              0
+            228 POP_JUMP_IF_TRUE         1 (to 232)
+            230 JUMP_BACKWARD           39 (to 154)
+
+928     >>  232 LOAD_FAST                0 (result)
+            234 LOAD_CONST               7 ('suspicious_connections')
+            236 BINARY_SUBSCR
+            240 LOAD_ATTR               15 (NULL|self + append)
+
+929         260 LOAD_FAST                4 (conn)
+            262 LOAD_ATTR               16 (pid)
+
+930         282 LOAD_FAST                4 (conn)
+            284 LOAD_ATTR               18 (laddr)
+            304 POP_JUMP_IF_FALSE       47 (to 400)
+            306 LOAD_FAST                4 (conn)
+            308 LOAD_ATTR               18 (laddr)
+            328 LOAD_ATTR               20 (ip)
+            348 FORMAT_VALUE             0
+            350 LOAD_CONST               8 (':')
+            352 LOAD_FAST                4 (conn)
+            354 LOAD_ATTR               18 (laddr)
+            374 LOAD_ATTR               10 (port)
+            394 FORMAT_VALUE             0
+            396 BUILD_STRING             3
+            398 JUMP_FORWARD             1 (to 402)
+        >>  400 LOAD_CONST               9 (None)
+
+931     >>  402 LOAD_FAST                5 (raddr)
+            404 LOAD_ATTR               20 (ip)
+            424 FORMAT_VALUE             0
+            426 LOAD_CONST               8 (':')
+            428 LOAD_FAST                5 (raddr)
+            430 LOAD_ATTR               10 (port)
+            450 FORMAT_VALUE             0
+            452 BUILD_STRING             3
+
+932         454 LOAD_CONST              10 ('suspicious_port:')
+            456 LOAD_FAST                6 (rport)
+            458 FORMAT_VALUE             0
+            460 BUILD_STRING             2
+
+928         462 LOAD_CONST              11 (('pid', 'local', 'remote', 'reason'))
+            464 BUILD_CONST_KEY_MAP      4
+            466 CALL                     1
+            474 POP_TOP
+            476 JUMP_BACKWARD          162 (to 154)
+
+923     >>  478 END_FOR
+            480 NOP
+
+938     >>  482 LOAD_GLOBAL              1 (NULL + psutil)
+            492 LOAD_ATTR               26 (process_iter)
+            512 BUILD_LIST               0
+            514 LOAD_CONST              12 (('pid', 'name', 'exe'))
+            516 LIST_EXTEND              1
+            518 CALL                     1
+            526 GET_ITER
+        >>  528 FOR_ITER               173 (to 878)
+            532 STORE_FAST               7 (proc)
+
+939         534 NOP
+
+940         536 LOAD_FAST                7 (proc)
+            538 LOAD_ATTR               28 (info)
+            558 LOAD_ATTR               31 (NULL|self + get)
+            578 LOAD_CONST              13 ('name')
+            580 CALL                     1
+            588 COPY                     1
+            590 POP_JUMP_IF_TRUE         2 (to 596)
+            592 POP_TOP
+            594 LOAD_CONST              14 ('')
+        >>  596 STORE_FAST               8 (name)
+
+941         598 LOAD_FAST                7 (proc)
+            600 LOAD_ATTR               28 (info)
+            620 LOAD_ATTR               31 (NULL|self + get)
+            640 LOAD_CONST              15 ('exe')
+            642 CALL                     1
+            650 COPY                     1
+            652 POP_JUMP_IF_TRUE         2 (to 658)
+            654 POP_TOP
+            656 LOAD_CONST              14 ('')
+        >>  658 STORE_FAST               9 (exe)
+
+942         660 LOAD_GLOBAL             33 (NULL + _normalize)
+            670 LOAD_FAST                8 (name)
+            672 CALL                     1
+            680 LOAD_ATTR               35 (NULL|self + replace)
+            700 LOAD_CONST              16 ('.exe')
+            702 LOAD_CONST              14 ('')
+            704 CALL                     2
+            712 STORE_FAST              10 (lname)
+
+943         714 LOAD_GLOBAL             33 (NULL + _normalize)
+            724 LOAD_FAST                9 (exe)
+            726 CALL                     1
+            734 STORE_FAST              11 (lexe)
+
+944         736 LOAD_GLOBAL             36 (REMOTE_ACCESS_PROCESS_NAMES)
+            746 GET_ITER
+        >>  748 FOR_ITER                61 (to 874)
+            752 STORE_FAST              12 (ra)
+
+945         754 LOAD_FAST               12 (ra)
+            756 LOAD_FAST               10 (lname)
+            758 CONTAINS_OP              0
+            760 POP_JUMP_IF_TRUE         5 (to 772)
+            762 LOAD_FAST               12 (ra)
+            764 LOAD_FAST               11 (lexe)
+            766 CONTAINS_OP              0
+            768 POP_JUMP_IF_TRUE         1 (to 772)
+            770 JUMP_BACKWARD           12 (to 748)
+
+946     >>  772 LOAD_FAST                0 (result)
+            774 LOAD_CONST              17 ('remote_access_processes')
+            776 BINARY_SUBSCR
+            780 LOAD_ATTR               15 (NULL|self + append)
+
+947         800 LOAD_FAST                7 (proc)
+            802 LOAD_ATTR               28 (info)
+            822 LOAD_ATTR               31 (NULL|self + get)
+            842 LOAD_CONST              18 ('pid')
+            844 CALL                     1
+
+948         852 LOAD_FAST                8 (name)
+
+949         854 LOAD_FAST                9 (exe)
+
+946         856 LOAD_CONST              12 (('pid', 'name', 'exe'))
+            858 BUILD_CONST_KEY_MAP      3
+            860 CALL                     1
+            868 POP_TOP
+
+951         870 POP_TOP
+            872 JUMP_FORWARD             1 (to 876)
+
+944     >>  874 END_FOR
+        >>  876 JUMP_BACKWARD          175 (to 528)
+
+938     >>  878 END_FOR
+
+955         880 LOAD_FAST                0 (result)
+            882 RETURN_VALUE
+        >>  884 SWAP                     2
+            886 POP_TOP
+
+920         888 SWAP                     2
+            890 STORE_FAST               2 (c)
+            892 RERAISE                  0
+        >>  894 PUSH_EXC_INFO
+
+934         896 LOAD_GLOBAL              0 (psutil)
+            906 LOAD_ATTR               22 (AccessDenied)
+            926 LOAD_GLOBAL             24 (Exception)
+            936 BUILD_TUPLE              2
+            938 CHECK_EXC_MATCH
+            940 POP_JUMP_IF_FALSE        3 (to 948)
+            942 POP_TOP
+
+935         944 POP_EXCEPT
+            946 JUMP_BACKWARD          233 (to 482)
+
+934     >>  948 RERAISE                  0
+        >>  950 COPY                     3
+            952 POP_EXCEPT
+            954 RERAISE                  1
+        >>  956 PUSH_EXC_INFO
+
+952         958 LOAD_GLOBAL              0 (psutil)
+            968 LOAD_ATTR               38 (NoSuchProcess)
+            988 LOAD_GLOBAL              0 (psutil)
+            998 LOAD_ATTR               22 (AccessDenied)
+           1018 BUILD_TUPLE              2
+           1020 CHECK_EXC_MATCH
+           1022 POP_JUMP_IF_FALSE        3 (to 1030)
+           1024 POP_TOP
+
+953        1026 POP_EXCEPT
+           1028 JUMP_BACKWARD          251 (to 528)
+
+952     >> 1030 RERAISE                  0
+        >> 1032 COPY                     3
+           1034 POP_EXCEPT
+           1036 RERAISE                  1
+ExceptionTable:
+  16 to 66 -> 894 [0]
+  68 to 106 -> 884 [2]
+  110 to 116 -> 884 [2]
+  118 to 186 -> 894 [0]
+  190 to 228 -> 894 [0]
+  232 to 478 -> 894 [0]
+  536 to 768 -> 956 [1]
+  772 to 874 -> 956 [1]
+  884 to 892 -> 894 [0]
+  894 to 942 -> 950 [1] lasti
+  948 to 948 -> 950 [1] lasti
+  956 to 1024 -> 1032 [2] lasti
+  1030 to 1030 -> 1032 [2] lasti
+'''
+
+def get_monitor_count():
+    try:
+        count = user32.GetSystemMetrics(80)
+        return {
+            'monitor_count': count }
+    except Exception:
+        return 
+
+def check_clock_sync():
+    try:
+        before = time.time()
+        resp = requests.head('https://dta-backend-lf3q.onrender.com/', timeout = 10)
+        after = time.time()
+        server_date = resp.headers.get('Date')
+        if not server_date:
+            return None
+        
+            try:
+                parsedate_to_datetime = parsedate_to_datetime
+                import email.utils
+                server_time = parsedate_to_datetime(server_date).timestamp()
+                client_time = (before + after) / 2
+                skew = abs(client_time - server_time)
+                if skew > 90:
+                    print(f'''\n[AVISO] Seu relógio está dessincronizado em {skew:.0f} segundos!''')
+                    print('Isso impedirá o funcionamento do anticheat.')
+                    print('Corrija em: Configurações > Hora e Idioma > Data e Hora > Sincronizar agora')
+                    print(f'''Hora do servidor (UTC): {datetime.fromtimestamp(server_time, timezone.utc).strftime('%H:%M:%S')}''')
+                    print(f'''Hora do seu PC (UTC):   {datetime.fromtimestamp(client_time, timezone.utc).strftime('%H:%M:%S')}\n''')
+                    logger.warning('CLOCK SKEW: %.1fs — usuário avisado', skew)
+                    return None
+                return None
+            except Exception:
+                logger.debug('Clock ERR_CLK_101')
+                return None
+
+def request_credentials():
+    entrada = str(input('Insert the MATCH PASSWORD: ')).strip()
+    if not re.match('.*[AB]$', entrada):
+        print('Invalid format. Please try again.')
+        logger.info('Invalid user entry format')
+        continue
+    logger.info('Valid user entry')
+    team_letter = entrada[-1]
+    match_pass = entrada[:-1]
+    match_response = validate_match(match_pass)
+    if not match_response or match_response.get('success'):
+        print('Invalid match password. Please try again.')
+        logger.warning('Validate %s', _ERR_VALIDATE_REJECTED)
+        continue
+    match_data = match_response.get('response')
+    if not match_data:
+        print('Invalid match password. Please try again.')
+        logger.warning('Validate %s', _ERR_VALIDATE_REJECTED)
+        continue
+    match_id = match_data.get('match_id')
+    if team_letter == 'A':
+        team_id = match_data.get('team1_id')
+    else:
+        team_id = match_data.get('team2_id')
+    logger.info('Password validated')
+    return (match_id, team_id, match_pass)
+
+def validate_match(match_pass):
+    logger.info('Validating match...')
+
+    try:
+        resp = secure_post(SERVER_ENDPOINT + '/validate', {
+            'match_pass': match_pass })
+    
+        try:
+            data = resp.json()
+        
+            try:
+                if not data or data.get('success'):
+                    logger.warning('Validate %s', _ERR_VALIDATE_REJECTED)
+                    return None
+                
+                    try:
+                        logger.info('Validate %s', _ERR_OK)
+                        return data
+                        except Exception:
+                            logger.warning('Validate %s', _ERR_VALIDATE_REJECTED)
+                        
+                            try:
+                                return None
+                            
+                                try:
+                                    pass
+                                except Exception:
+                                    logger.warning('Validate %s', _ERR_VALIDATE_NETWORK)
+                                    return None
+
+def send_info_data(payload):
+    try:
+        resp = secure_post(SERVER_ENDPOINT + '/insert_log', payload)
+    
+        try:
+            match_response = resp.json()
+        
+            try:
+                if not match_response.get('success'):
+                    logger.warning('Info %s', _ERR_INFO_REJECTED)
+                    return False
+                return True
+                except Exception:
+                    logger.warning('Info %s', _ERR_INFO_REJECTED)
+                
+                    try:
+                        return False
+                    
+                        try:
+                            pass
+                        except Exception:
+                            logger.warning('Info %s', _ERR_INFO_NETWORK)
+                            return False
+
+def request_username():
+    username = ''
+    if username == '':
+        username = str(input('WebSite Username: '))
+        pattern = re.compile('[a-zA-Z0-9_-]+')
+        username = ''.join(re.findall(pattern, username))
+        username = username.strip().replace(' ', '').lower()
+        if username == '':
+            continue
+    return username
+
+def main_loop():
+    check_clock_sync()
+    (match_id, team_id, match_pass) = request_credentials()
+    # WARNING: Decompyle incomplete
+
+
+==============================================================================
+_ac_core Cython module  (compiled .pyd)
+==============================================================================
+# _ac_core.cp312-win_amd64.pyd is a native Cython binary; the .pyx source
+# cannot be recovered as Python source.  The observable interface, extracted
+# from exported symbols and Cython-embedded docstrings inside the .pyd:
+
+class PinningAdapter(requests.adapters.HTTPAdapter):
+    # 'Adapter que valida o fingerprint SHA256 do certificado TLS.'
+    def __init__(self, pin_sha256): ...
+    def send(self, request, **kwargs):
+        # raises requests.exceptions.SSLError('Certificate pin mismatch') on mismatch
+        ...
+
+def init_secrets():
+    '''Deofusca e armazena os segredos em memoria. Chamar uma vez no startup.'''
+    # XOR-deobfuscates the embedded HMAC key and endpoint URL.
+
+def get_endpoint() -> str:
+    '''Retorna o endpoint do servidor (ja deofuscado).'''
+    return 'https://dta-backend-lf3q.onrender.com/anticheat'
+
+def sign_payload(payload_json: bytes) -> str:
+    '''Assina o payload JSON com HMAC-SHA256 usando a chave interna.'''
+    return base64.b64encode(hmac.new(SECRET, payload_json, hashlib.sha256).digest()).decode()
+
+def generate_nonce() -> str:
+    '''Gera nonce unico: timestamp_ms + 32 chars hex aleatorios.'''
+    return f'{int(time.time()*1000)}-{secrets.token_hex(16)}'
+
+def rate_limit_wait():
+    '''Bloqueia ate que uma chamada seja permitida pelo rate limiter.'''
+    ...
+
+def _json_default(obj): ...       # fallback for non-JSON-serializable values
+def _sanitize_for_json(obj): ...  # dict-key -> str, NaN/Inf -> None
+
+def _ensure_session() -> requests.Session:
+    # Lazy-initialized requests.Session with PinningAdapter mounted and default
+    # User-Agent header pre-set.
+    ...
+
+def secure_post(url, payload, timeout=15) -> requests.Response:
+    '''Envia POST assinado com HMAC, nonce anti-replay e rate limiting.'''
+    session = _ensure_session()
+    rate_limit_wait()
+    payload = _sanitize_for_json(payload)
+    payload['_nonce'] = generate_nonce()
+    payload['_ts'] = int(time.time())
+    body = json.dumps(payload, ensure_ascii=True, sort_keys=True,
+                      allow_nan=False, default=_json_default).encode('utf-8')
+    headers = {
+        'User-Agent': f'DTABroom/2.0 ({platform.system()} {platform.release()})',
+        'Content-Type': 'application/json; charset=utf-8',
+        'X-Anticheat-Signature': sign_payload(body),
+        'X-Anticheat-Nonce': payload['_nonce'],
+        'X-Anticheat-Timestamp': str(payload['_ts']),
+    }
+    return session.post(url, data=body, headers=headers, timeout=timeout, verify=True)
+
+==============================================================================
+PyInstaller runtime hooks  (autogenerated by PyInstaller 6.19.0)
+==============================================================================
+# Byte-verified identical to the official PyInstaller release.
+# They set up sys.path, install the archive importer and run the main script.
+
+
+------------------------------------------------------------------------------
+pyiboot01_bootstrap
+------------------------------------------------------------------------------
+# Source Generated with Decompyle++
+
+# File: pyiboot01_bootstrap.pyc (Python 3.12)
+
+
+
+import sys
+
+import pyimod02_importers
+
+pyimod02_importers.install()
+
+import os
+
+if not hasattr(sys, 'frozen'):
+
+    sys.frozen = True
+
+sys.prefix = sys._MEIPASS
+
+sys.exec_prefix = sys.prefix
+
+sys.base_prefix = sys.prefix
+
+sys.base_exec_prefix = sys.exec_prefix
+
+VIRTENV = 'VIRTUAL_ENV'
+
+if VIRTENV in os.environ:
+
+    os.environ[VIRTENV] = ''
+
+    del os.environ[VIRTENV]
+
+python_path = []
+
+for pth in sys.path:
+
+    python_path.append(os.path.abspath(pth))
+
+    sys.path = python_path
+
+
+
+try:
+
+    import encodings
+
+    if sys.warnoptions:
+
+        import warnings
+
+    import pyimod03_ctypes
+
+    pyimod03_ctypes.install()
+
+    if sys.platform.startswith('win'):
+
+        import pyimod04_pywin32
+
+        pyimod04_pywin32.install()
+
+    for entry in os.listdir(sys._MEIPASS):
+
+        entry = os.path.join(sys._MEIPASS, entry)
+
+        if not os.path.isdir(entry):
+
+            continue
+
+        if not entry.endswith('.egg'):
+
+            continue
+
+        sys.path.append(entry)
+
+    return None
+
+except ImportError:
+
+    continue
+
+
+
+
+------------------------------------------------------------------------------
+pyi_rth_inspect
+------------------------------------------------------------------------------
+# Source Generated with Decompyle++
+
+# File: pyi_rth_inspect.pyc (Python 3.12)
+
+
+
+
+
+def _pyi_rthook():
+
+    import inspect
+
+    import os
+
+    import sys
+
+    import zipfile
+
+    SYS_PREFIX = os.path.normpath(sys._MEIPASS)
+
+    BASE_LIBRARY = os.path.join(SYS_PREFIX, 'base_library.zip')
+
+    
+
+    def _get_base_library_files(filename = None):
+
+        if not os.path.isfile(filename):
+
+            return set()
+
+        zf = None.ZipFile(filename, 'r')
+
+        namelist = zf.namelist()
+
+        None(None, None)
+
+        return (lambda .0 = None: for entry in .0:
+
+os.path.normpath(entry).0)(namelist())
+
+        with None:
+
+            if not None:
+
+                pass
+
+        continue
+
+
+
+    base_library_files = _get_base_library_files(BASE_LIBRARY)
+
+    _orig_inspect_getsourcefile = inspect.getsourcefile
+
+    
+
+    def _pyi_getsourcefile(object = None):
+
+        filename = inspect.getfile(object)
+
+        filename = os.path.normpath(filename)
+
+        if not os.path.isabs(filename):
+
+            main_file = getattr(sys.modules['__main__'], '__file__', None)
+
+            if main_file and filename == os.path.basename(main_file):
+
+                return main_file
+
+            pyc_filename = None + 'c'
+
+            if pyc_filename in base_library_files:
+
+                return os.path.normpath(os.path.join(BASE_LIBRARY, pyc_filename))
+
+            return None.path.normpath(os.path.join(SYS_PREFIX, filename))
+
+        if None.startswith(SYS_PREFIX):
+
+            return filename
+
+        return _orig_inspect_getsourcefile(object)
+
+
+
+    inspect.getsourcefile = _pyi_getsourcefile
+
+
+
+_pyi_rthook()
+
+del _pyi_rthook
+
+
+------------------------------------------------------------------------------
+pyi_rth_setuptools
+------------------------------------------------------------------------------
+# Source Generated with Decompyle++
+
+# File: pyi_rth_setuptools.pyc (Python 3.12)
+
+
+
+
+
+def _pyi_rthook():
+
+    
+
+    def _install_setuptools_distutils_hack():
+
+        import os
+
+        import setuptools
+
+        setuptools_major = int(setuptools.__version__.split('.')[0])
+
+        default_value = 'stdlib' if setuptools_major < 60 else 'local'
+
+        if os.environ.get('SETUPTOOLS_USE_DISTUTILS', default_value) == 'local':
+
+            import _distutils_hack
+
+            _distutils_hack.add_shim()
+
+            return None
+
+
+
+    
+
+    try:
+
+        _install_setuptools_distutils_hack()
+
+        return None
+
+    except Exception:
+
+        return None
+
+
+
+
+
+_pyi_rthook()
+
+del _pyi_rthook
+
+
+------------------------------------------------------------------------------
+pyi_rth_pkgutil
+------------------------------------------------------------------------------
+# Source Generated with Decompyle++
+
+# File: pyi_rth_pkgutil.pyc (Python 3.12)
+
+
+
+
+
+def _pyi_rthook():
+
+    import pkgutil
+
+    import pyimod02_importers
+
+    
+
+    def _iter_pyi_frozen_finder_modules(finder = None, prefix = None):
+
+        pyz_toc_tree = pyimod02_importers.get_pyz_toc_tree()
+
+        if finder._pyz_entry_prefix:
+
+            pkg_name_parts = finder._pyz_entry_prefix.split('.')
+
+        else:
+
+            pkg_name_parts = []
+
+        tree_node = pyz_toc_tree
+
+        for pkg_name_part in pkg_name_parts:
+
+            tree_node = tree_node.get(pkg_name_part)
+
+            if isinstance(tree_node, dict):
+
+                continue
+
+            tree_node = { }
+
+            pkg_name_parts
+
+        for entry_name, entry_data in tree_node.items():
+
+            is_pkg = isinstance(entry_data, dict)
+
+            yield (prefix + entry_name, is_pkg)
+
+            tree_node.items()
+
+    # WARNING: Decompyle incomplete
+
+
+
+    pkgutil.iter_importer_modules.register(pyimod02_importers.PyiFrozenFinder, _iter_pyi_frozen_finder_modules)
+
+
+
+_pyi_rthook()
+
+del _pyi_rthook
+
+
+------------------------------------------------------------------------------
+pyi_rth_multiprocessing
+------------------------------------------------------------------------------
+# Source Generated with Decompyle++
+
+# File: pyi_rth_multiprocessing.pyc (Python 3.12)
+
+
+
+
+
+def _pyi_rthook():
+
+    import sys
+
+    import multiprocessing
+
+    import multiprocessing.spawn as multiprocessing
+
+    _args_from_interpreter_flags = _args_from_interpreter_flags
+
+    import subprocess
+
+    multiprocessing.process.ORIGINAL_DIR = None
+
+    
+
+    def _freeze_support():
+
+        if len(sys.argv) >= 2 and sys.argv[-2] == '-c' and sys.argv[-1].startswith(('from multiprocessing.resource_tracker import main', 'from multiprocessing.forkserver import main')) and set(sys.argv[1:-2]) == set(_args_from_interpreter_flags()):
+
+            exec(sys.argv[-1])
+
+            sys.exit()
+
+    # WARNING: Decompyle incomplete
+
+
+
+    multiprocessing.freeze_support = _freeze_support
+
+    multiprocessing.spawn.freeze_support = _freeze_support
+
+
+
+_pyi_rthook()
+
+del _pyi_rthook
+
+
+==============================================================================
+How the exe launches at runtime
+==============================================================================
+# The PyInstaller bootloader (byte-verified identical to run.exe from PyInstaller
+# 6.19.0's Windows x64 wheel, apart from the 4-byte compile timestamp) does roughly:
+#     1. mkdtemp() -> %TEMP%\_MEI<random>
+#     2. extract every 'b'-type CArchive entry (DLLs, .pyd, base_library.zip)
+#     3. LoadLibrary python312.dll, initialize Python
+#     4. sys._MEIPASS = <tempdir>; prepend base_library.zip + tempdir to sys.path
+#     5. exec the 's'-type entries in order (rthooks first, then 'dtabroom')
+#     6. on exit, delete the tempdir
+#
+# There is NO exec/eval of network data, no marshal.loads on network data,
+# and no second stage.  The main loop is dtabroom.main_loop() shown above.
