@@ -1,0 +1,30 @@
+Modules bundled inside DTA Broom v3_5.exe (PyInstaller CArchive)
+======================================================================
+
+The bytecode of every module below was compared against the corresponding
+official Python 3.12.0 stdlib / third-party wheel or PyInstaller 6.19.0
+release.  Every bundled module matched byte-for-byte; only `dtabroom` and
+`_ac_core.pyd` are the author's own code.
+
+Type codes: 'b' = binary blob, 's' = python script (top-level), 'm' = python
+module (imported), 'z' = PYZ archive with the bulk of the stdlib.
+
+  s  dtabroom              (author's script - decompiled in 01_dtabroom_clean.py)
+  b  _ac_core.cp312-win_amd64.pyd  (author's Cython module - see 02+05)
+  b  python312.dll         (Python Software Foundation, signed)
+  b  libssl-3.dll          (Python Software Foundation, signed)
+  b  libcrypto-3.dll       (Python Software Foundation, signed)
+  b  certifi/cacert.pem    (Mozilla CA bundle 2026-02-25)
+  z  PYZ.pyz               (466 stdlib + third-party modules)
+  b  base_library.zip      (155 stdlib bootstrap modules)
+
+Third-party libraries (all matched official wheels):
+  - requests 2.32.5
+  - urllib3 2.6.3
+  - idna 3.11
+  - certifi 2026.2.25
+  - charset_normalizer 3.4.5
+  - psutil 7.2.2
+  - packaging 26.0
+  - setuptools 81.0.0
+  - PyInstaller runtime 6.19.0

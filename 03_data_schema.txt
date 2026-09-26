@@ -1,0 +1,158 @@
+DTA Broom v3.5 - data schema
+============================
+
+Every 30 seconds (POLL_INTERVAL) the client calls `build_report()` plus
+a series of helpers, merges everything into one dict `payload`, sanitises
+it, wraps it with `_nonce` / `_ts`, signs the JSON body with HMAC-SHA256
+and POSTs it to the backend.  The full field list follows.
+
+LEVEL 1 (from build_report)
+---------------------------
+username             str  - what the player typed at the WebSite Username
+                            prompt (sanitised to [a-zA-Z0-9_-]+, lower-cased)
+match_id             str  - what the player typed at "Insert the MATCH
+                            PASSWORD:", stripped of trailing A/B
+team_id              str  - the trailing 'A' or 'B' that identifies the team
+evidence             dict - see LEVEL 2A
+vpn                  dict - see LEVEL 2B
+vm                   dict - see LEVEL 2C
+self_vm              dict - see LEVEL 2D
+client_timestamp     int  - Unix seconds when the report was built
+client_time_iso      str  - ISO-8601 UTC form of the same instant
+
+LEVEL 1 (added by main_loop before sending)
+-------------------------------------------
+dbd_meta             dict - see LEVEL 2E   (state of the game process)
+connected_devices    list - see LEVEL 2F   (removable drives / pendrives)
+dbd_dlls             dict - see LEVEL 2G   (DLLs loaded inside DBD)
+windows              dict - see LEVEL 2H   (visible top-level windows)
+hardware_fingerprint dict - see LEVEL 2I   (motherboard / CPU / disks)
+debuggers            dict - see LEVEL 2J   (running debuggers)
+network              dict - see LEVEL 2K   (established connections)
+monitors             dict - see LEVEL 2L   (physical monitor count)
+
+LEVEL 2A - evidence (`collect_process_evidence`)
+-----------------------------------------------
+timestamp            int  - Unix seconds
+processes            list of dicts, one per SUSPECT process:
+    pid              int
+    name             str
+    exe              str  - full path
+    cwd              str  - working directory
+    username         str  - OS user that owns the process
+    num_threads      int
+    create_time      str  - ISO-8601 UTC
+    file_size        int  - size of the exe file on disk
+    sha256           str  - SHA-256 of the exe file on disk
+    suspicious_reasons list of strings, any of:
+         "name_match:<pattern>"    (from NAME_BLACKLIST_PATTERNS)
+         "exe_in_temp_or_appdata"
+         "hash_blacklist:<sha256>" (HASH_BLACKLIST is empty in the code)
+
+LEVEL 2B - vpn (`detect_vpn`)
+----------------------------
+vpn_processes        list of {pid, name, exe}
+vpn_interfaces       list of {ifname, addrs: [str]}
+raw_ipconfig_matches list of stripped ipconfig /all lines that mention
+                     "tunnel adapter", "tap-windows", "ppp adapter",
+                     "wireguard", "wire guard", "virtual" or "vpn"
+
+LEVEL 2C - vm (`detect_vm`)
+---------------------------
+vm_processes         list of {pid, name, exe}
+wmic_flags           list of strings, any of vmware / virtualbox / vbox /
+                     qemu / xen / hyper-v / microsoft corporation
+wmic_raw             str  - full "Manufacturer Model" from Win32_ComputerSystem
+mac_match            bool
+mac_prefix           str  - first six hex chars of the primary MAC
+
+LEVEL 2D - self_vm (`is_self_running_in_vm`)
+-------------------------------------------
+wmic                 str
+is_vm                bool
+reasons              list of strings
+mac_prefix           str
+
+LEVEL 2E - dbd_meta (`get_dbd_metadata`)
+---------------------------------------
+is_open              bool
+pid, name, exe, cmdline, cwd, username, num_threads, create_time
+memory_rss           int  - RSS memory bytes for the DBD process
+
+LEVEL 2F - connected_devices (`get_removable_drives_basic`)
+----------------------------------------------------------
+List of dicts for each REMOVABLE drive (via Windows GetDriveTypeW):
+    drive, type, label, fs_type, serial, max_component_len, file_flags
+
+LEVEL 2G - dbd_dlls (`get_dbd_loaded_dlls`)
+------------------------------------------
+dbd_found            bool
+total_dlls           int
+unknown_dlls         list of {path} for DLLs whose basename is not in
+                     DBD_DLL_WHITELIST
+grouped              dict grouping DLL basenames
+
+LEVEL 2H - windows (`detect_suspicious_windows`)
+-----------------------------------------------
+suspicious_windows   list of {pattern, title, class, reason}
+                     titles matching: inject, overlay, cheat engine,
+                     ce main, ducts, imgui, d3d, directx overlay
+overlay_windows      list of {title, class, ex_style} for top-level
+                     windows with WS_EX_TOPMOST | WS_EX_TRANSPARENT
+
+LEVEL 2I - hardware_fingerprint (`get_hardware_fingerprint`)
+-----------------------------------------------------------
+computer_name        str  - platform.node()
+bios_uuid            str  - PowerShell: Win32_ComputerSystemProduct.UUID
+motherboard_serial   str  - Win32_BaseBoard.SerialNumber
+disk_serials         list - one "serial|model" per Win32_DiskDrive
+cpu_name             str  - Win32_Processor.Name
+ram_total_gb         int  - psutil.virtual_memory().total (rounded)
+os_version           str  - platform-specific version string
+
+LEVEL 2J - debuggers (`detect_debuggers`)
+----------------------------------------
+debugger_attached    bool - kernel32.IsDebuggerPresent()
+debugger_processes   list of {pid, name, exe} matching
+                     DEBUGGER_PROCESS_NAMES (x64dbg, ida, ghidra,
+                     cheatengine, dnspy, wireshark, fiddler, ...)
+
+LEVEL 2K - network (`detect_network_suspicious`)
+-----------------------------------------------
+suspicious_connections    list of {pid, local, remote, reason} for
+                          established connections whose remote port is
+                          in SUSPICIOUS_REMOTE_PORTS
+remote_access_processes   list of {pid, name, exe} matching
+                          REMOTE_ACCESS_PROCESS_NAMES (anydesk,
+                          teamviewer, parsec, rustdesk, ...)
+total_established         int - total count of ESTABLISHED sockets
+
+LEVEL 2L - monitors (`get_monitor_count`)
+----------------------------------------
+monitor_count        int  - user32.GetSystemMetrics(SM_CMONITORS)
+
+HEADERS ADDED BY secure_post()
+------------------------------
+_nonce                  "<ms_timestamp>-<32 hex chars>"
+_ts                     Unix seconds
+User-Agent              "DTABroom/2.0 (<system> <release>)"
+Content-Type            "application/json; charset=utf-8"
+X-Anticheat-Signature   base64(HMAC-SHA256(hmac_key, body))
+X-Anticheat-Nonce       same as _nonce
+X-Anticheat-Timestamp   same as _ts
+
+HTTP ENDPOINTS USED
+-------------------
+HEAD  https://dta-backend-lf3q.onrender.com/               (clock sync)
+POST  https://dta-backend-lf3q.onrender.com/anticheat/validate
+POST  https://dta-backend-lf3q.onrender.com/anticheat/insert_log
+
+OPAQUE STATUS CODES LOGGED LOCALLY (never the real HTTP status)
+---------------------------------------------------------------
+ERR_NET_000 = success   ERR_NET_101 = HTTP 400 / try 1
+ERR_NET_102 = HTTP 400 / try 2    ERR_NET_201 = auth error
+ERR_NET_301 = rate-limited        ERR_NET_501 = 5xx
+ERR_NET_901 = unknown             ERR_NET_701 = network error
+ERR_VAL_101 = /validate rejected  ERR_VAL_201 = /validate net error
+ERR_INF_101 = /insert rejected    ERR_INF_201 = /insert net error
+ERR_CLK_101 = clock skew          ERR_APP_701 = generic cycle failure

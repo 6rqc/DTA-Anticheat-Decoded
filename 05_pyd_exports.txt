@@ -1,0 +1,577 @@
+_ac_core.cp312-win_amd64.pyd  -  exports and embedded strings
+======================================================================
+See 02_ac_core_secrets.txt for the deobfuscated secrets.
+
+PE metadata:
+  size    : 86,528 bytes
+  machine : x86_64
+  timestamp: 2026-09-25 23:59:18 UTC
+  export  : PyInit__ac_core
+  imports : python312.dll (152 fns), KERNEL32.dll (6 fns),
+            VCRUNTIME140.dll (6 fns), api-ms-win-crt-runtime-l1-1-0.dll (8 fns)
+
+PUBLIC API (visible from Python):
+  init_secrets()          - populate module-level SECRET + ENDPOINT
+  get_endpoint() -> str
+  sign_payload(json_bytes) -> str  (base64 HMAC-SHA256)
+  generate_nonce() -> str
+  rate_limit_wait() -> None
+  secure_post(url, payload, timeout=15) -> requests.Response
+  PinningAdapter(pin_sha256)   [class, requests.adapters.HTTPAdapter]
+  _ensure_session() -> requests.Session
+  _json_default(obj), _sanitize_for_json(obj)
+
+----------------------------------------------------------------------
+All printable strings inside _ac_core.pyd (A=ascii, U=utf16):
+----------------------------------------------------------------------
+A !This program cannot be run in DOS mode.
+A pRich~
+A .text
+A `.rdata
+A @.data
+A .pdata
+A @.rsrc
+A @.reloc
+A X UVWAUAWH
+A H9t$ 
+A L9|$ tJf
+A A_A]_^]
+A t5H;-
+A T$0E3
+A T$HE3
+A T$XE3
+A @SVWH
+A VWATAVAWH
+A d$@E3
+A D9#|#H
+A t5H;=
+A tdH;=
+A L$xH3
+A A_A^A\_^
+A @SUVWH
+A H_^][
+A H_^][
+A USVWATAUAVAWH
+A }gI9A
+A H9O ~
+A EgA9]
+A M9g(t
+A A_A^A]A\_^[]
+A @USVWAVAWH
+A A_A^_^[]
+A @SUVWAVH
+A A^_^][
+A USATI
+A .E9&|
+A D$ |#H
+A @UATAWH
+A E9,$|
+A E9/|#I
+A A_A\]
+A USVWATAUAVAWH
+A }gE9.|
+A I9L$ ~
+A MoD9/
+A +D9+|
+A A_A^A]A\_^[]
+A @USVWATAUAVAWH
+A I96t_L;
+A A_A^A]A\_^[]
+A D9&|5H
+A tAL;%
+A d$(H9A
+A D$8H;
+A D$(E3
+A t?L;5
+A t<L;5
+A \$8H;
+A L;%}q
+A |$`u(H
+A D$PE3
+A M)4$u
+A A94$|
+A M)4$u
+A L;|$`
+A ~Yfff
+A L;|$P|
+A |QL)6uLH
+A M)4$u
+A M)4$u
+A |WL)7uRH
+A |$PH;
+A @tQH;
+A @SUVWH
+A (_^][H
+A (_^][
+A (_^][
+A @SUVWH
+A (_^][
+A (_^][
+A (_^][I
+A (_^][
+A (_^][H
+A @SUVWAVH
+A  A^_^][
+A  A^_^][
+A UVWATAVH
+A |$XH+
+A  A^A\_^]
+A UVWATAUAVAWH
+A H98t\H
+A @A_A^A]A\_^]
+A SWAVH
+A `A^_[
+A `A^_[
+A @SUVWATAVAWH
+A 0A_A^A\_^][
+A t6D90|
+A 0A_A^A\_^][
+A @SVWE3
+A VWAVH
+A 0A^_^
+A L9A t
+A @UATAUAVAWH
+A  A_A^A]A\]
+A  A_A^A]A\]
+A {h99|
+A { 99|
+A {@99|
+A {H99|
+A {P99|
+A {X99|
+A {`99|
+A {p99|
+A @SUVWH
+A 8_^][
+A 8_^][H
+A 8_^][
+A 8_^][H
+A 8_^][
+A 8_^][H
+A 8_^][
+A 8_^][H
+A SWAUAVH
+A XA^A]_[
+A XA^A]_[
+A XA^A]_[
+A XA^A]_[
+A @SUVWH
+A (_^][
+A (_^][
+A @SUVWATAUAVAWH
+A ~%fff
+A 8A_A^A]A\_^][
+A ~?L9D
+A @tQL;
+A SVWAUAVH
+A A^A]_^[
+A A^A]_^[
+A @SVWAVH
+A (A^_^[
+A (A^_^[
+A VWAVH
+A @A^_^
+A @A^_^
+A H1D$ 
+A L$HH1D$ 
+A D$ H3L$ H3
+A @SUVWH
+A (_^][
+A @VWAVH
+A GenuD
+A l$@E3
+A  Ic(H
+A _ac_core.c
+A _ac_core.pyx
+A bytes
+A object of type 'NoneType' has no len()
+A integer division or modulo by zero
+A _ac_core._xor_deobfuscate
+A init_secrets
+A decode
+A 'NoneType' object has no attribute '%.30s'
+A _ac_core.init_secrets
+A get_endpoint
+A sign_payload
+A _ac_core.sign_payload
+A payload_json
+A encode
+A generate_nonce
+A _ac_core.generate_nonce
+A rate_limit_wait
+A 'NoneType' object is not iterable
+A append
+A _ac_core.rate_limit_wait
+A __init__
+A _ac_core.PinningAdapter.__init__
+A super(): empty __class__ cell
+A _ac_core.PinningAdapter.send
+A _ensure_session
+A _ac_core._ensure_session
+A _json_default
+A _ac_core._json_default
+A _sanitize_for_json
+A _ac_core._sanitize_for_json
+A items
+A secure_post
+A _ac_core.secure_post
+A payload
+A 'NoneType' object is not subscriptable
+A _ac_core
+A Interpreter change detected - this module can only be loaded into one interpreter per process.
+A __loader__
+A loader
+A __file__
+A origin
+A __package__
+A parent
+A __path__
+A submodule_search_locations
+A Module '_ac_core' has already been imported. Re-initialisation is not supported.
+A builtins
+A cython_runtime
+A __builtins__
+A __orig_bases__
+A init _ac_core
+A 5^4B`K
+A j;],PA
+A jLhu!l
+A Fc2:0
+A %Pe1N
+A jT@v@
+A name '%U' is not defined
+A  while calling a Python object
+A NULL result without error in PyObject_Call
+A Expected %s, got %.200s
+A %s() got multiple values for keyword argument '%U'
+A %.200s() keywords must be strings
+A %s() got an unexpected keyword argument '%U'
+A at least
+A at most
+A exactly
+A %.200s() takes %.8s %zd positional argument%.1s (%zd given)
+A Missing type object
+A Argument '%.200s' has incorrect type (expected %.200s, got %.200s)
+A join() result is too long for a Python string
+A hasattr(): attribute name must be string
+A keywords must be strings
+A calling %R should have returned an instance of BaseException, not %R
+A raise: exception class must be a subclass of BaseException
+A need more than %zd value%.1s to unpack
+A too many values to unpack (expected %zd)
+A dictionary changed size during iteration
+A _cython_3_2_4
+A Shared Cython type %.200s is not a type object
+A Shared Cython type %.200s has the wrong size, try recompiling
+A __module__
+A _cython_3_2_4._common_types_metatype
+A __name__ must be set to a string object
+A __qualname__ must be set to a string object
+A __defaults__ must be set to a tuple object
+A changes to cyfunction.__defaults__ will not currently affect the values used in function calls
+A __kwdefaults__ must be set to a dict object
+A changes to cyfunction.__kwdefaults__ will not currently affect the values used in function calls
+A __annotations__ must be set to a dict object
+A %.200s() %s (%zd given)
+A %.200s() %s
+A func_doc
+A __doc__
+A func_name
+A __name__
+A __qualname__
+A func_dict
+A __dict__
+A func_globals
+A __globals__
+A func_closure
+A __closure__
+A func_code
+A __code__
+A func_defaults
+A __defaults__
+A __kwdefaults__
+A __annotations__
+A _is_coroutine
+A __vectorcalloffset__
+A __weaklistoffset__
+A __reduce__
+A Bad call flags for CyFunction
+A <cyfunction %U at %p>
+A takes no arguments
+A takes exactly one argument
+A takes no keyword arguments
+A unbound method %.200S() needs an argument
+A needs an argument
+A _cython_3_2_4.cython_function_or_method
+A __mro_entries__ must return a tuple
+A metaclass conflict: the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases
+A value too large to convert to int
+A does not match
+A compile time Python version %d.%d of module '%.100s' %s runtime version %d.%d
+A decompress
+A Failed to import '%.20s.decompress' - cannot initialise module strings. String compression was configured with the C macro 'CYTHON_COMPRESS_STRINGS=%d'.
+A __int__ returned non-int (type %.200s).  The ability to return an instance of a strict subclass of int is deprecated, and may be removed in a future version of Python.
+A __int__ returned non-int (type %.200s)
+A an integer is required
+A Retorna o endpoint do servidor (j
+A  deofuscado).
+A Cria a sess
+A o HTTP com User-Agent e pinning (lazy init).
+A     Fallback para tipos que o json n
+A o sabe serializar nativamente.
+A     Evita que valores ex
+A ticos vindos de PowerShell/psutil/WMI (bytes crus,
+A     objetos com repr custom, sets, etc.) quebrem a serializa
+A o e resultem
+A     em body inv
+A lido chegando ao servidor (HTTP 400 invalid_body).
+A Gera nonce 
+A nico: timestamp_ms + 32 chars hex aleat
+A rios.
+A Deofusca e armazena os segredos em mem
+A ria. Chamar uma vez no startup.
+A     Percorre o payload garantindo que:
+A     - Chaves de dict s
+A o strings (JSON exige string keys).
+A     - Floats n
+A o-finitos (NaN, Infinity) viram None. Sem isso o cliente
+A       serializaria "NaN"/"Infinity" (n
+A o-JSON padr
+A o), a lib do servidor
+A       levantaria json.JSONDecodeError e o middleware devolveria 400.
+A     - Tipos ex
+A ticos passam pelo _json_default e viram string.
+A     Envia POST assinado com HMAC, nonce anti-replay e rate limiting.
+A     Retorna o objeto requests.Response.
+A     Levanta exce
+A o se falhar.
+A Bloqueia at
+A  que uma chamada seja permitida pelo rate limiter.
+A Assina o payload JSON com HMAC-SHA256 usando a chave interna.
+A _ac_core.pyx
+A dulo Cython com a l
+A gica de seguran
+A tica do anticheat.
+A Compilado para .pyd (bin
+A rio nativo) 
+A  imposs
+A vel decompilar para Python leg
+A - Deofusca
+A o de segredos (HMAC key + endpoint)
+A - Assinatura HMAC-SHA256
+A - Gera
+A o de nonce anti-replay
+A - Envio seguro de requests (secure_post)
+A - Rate limiting
+A - Certificate pinning adapter
+A .text$mn
+A .text$mn$00
+A .text$x
+A .idata$5
+A .00cfg
+A .CRT$XCA
+A .CRT$XCZ
+A .CRT$XIA
+A .CRT$XIZ
+A .CRT$XPA
+A .CRT$XPZ
+A .CRT$XTA
+A .CRT$XTZ
+A .rdata
+A .rdata$voltmd
+A .rdata$zzzdbg
+A .rtc$IAA
+A .rtc$IZZ
+A .rtc$TAA
+A .rtc$TZZ
+A .xdata
+A .edata
+A .idata$2
+A .idata$3
+A .idata$4
+A .idata$6
+A .data
+A .pdata
+A .rsrc$01
+A .rsrc$02
+A _ac_core.cp312-win_amd64.pyd
+A PyInit__ac_core
+A PySequence_List
+A PyBaseObject_Type
+A PyObject_SetAttr
+A PyUnicode_InternFromString
+A PyCFunction_Type
+A PyOS_snprintf
+A PyThreadState_Get
+A PyExc_Exception
+A PyException_GetTraceback
+A PyErr_SetObject
+A PyDict_SetDefault
+A PyCode_NewEmpty
+A PyErr_GivenExceptionMatches
+A PyErr_WarnEx
+A PyExc_RuntimeWarning
+A PyFrame_New
+A _Py_ascii_whitespace
+A PyExc_DeprecationWarning
+A _PyDict_SetItem_KnownHash
+A PyExc_KeyError
+A Py_LeaveRecursiveCall
+A PyImport_ImportModule
+A PyBytes_AsString
+A PyImport_ImportModuleLevelObject
+A PyDict_Update
+A PyErr_Occurred
+A PyArg_ValidateKeywordArguments
+A PyLong_FromSsize_t
+A PyUnicode_DecodeUTF8
+A PyObject_GenericGetAttr
+A PyUnicode_AsUTF8AndSize
+A PyTraceBack_Here
+A PyList_SetSlice
+A _PyThreadState_UncheckedGet
+A PyExc_RuntimeError
+A PyMethod_New
+A PyObject_SetAttrString
+A PyLong_FromLong
+A PyObject_GC_UnTrack
+A PyObject_Hash
+A PyDict_GetItemWithError
+A PyInterpreterState_GetID
+A PyObject_GetAttr
+A PyDict_Contains
+A _Py_NoneStruct
+A PyTuple_New
+A PyObject_GenericSetDict
+A PyDict_SetItemString
+A PyDict_Size
+A PyLong_FromLongLong
+A PyFloat_FromDouble
+A PyExc_AttributeError
+A PyTuple_GetSlice
+A PyUnicode_New
+A PyNumber_Multiply
+A PyErr_SetString
+A PyExc_ZeroDivisionError
+A PyIter_Next
+A PyObject_GetIter
+A PyErr_WarnFormat
+A PyExc_ValueError
+A PyUnicode_InternInPlace
+A PyDict_Next
+A PyErr_Format
+A PyDict_Type
+A PyObject_RichCompare
+A PyBool_Type
+A PyTuple_Type
+A _Py_FalseStruct
+A PyImport_GetModule
+A PyFloat_Type
+A PyOS_string_to_double
+A PyModule_NewObject
+A PyMethod_Type
+A PyLong_Type
+A PyType_IsSubtype
+A PyNumber_Subtract
+A PyExc_OverflowError
+A _Py_Dealloc
+A PyTuple_GetItem
+A PyImport_GetModuleDict
+A PyModule_GetDict
+A PyObject_Format
+A PyErr_ExceptionMatches
+A PyUnicode_FindChar
+A PyObject_GC_Del
+A PyObject_CallFunctionObjArgs
+A PyLong_AsLong
+A PyObject_GenericGetDict
+A PyObject_ClearWeakRefs
+A PyObject_Vectorcall
+A PyUnicode_FromFormat
+A Py_Version
+A PyList_New
+A PyImport_AddModule
+A PyObject_GetAttrString
+A _PyDict_Pop
+A PyErr_Clear
+A PyList_Append
+A PyBytes_Type
+A PyObject_RichCompareBool
+A PyUnicode_Decode
+A PyException_SetTraceback
+A _PyObject_GenericGetAttrWithDict
+A PySet_Type
+A PyObject_VectorcallDict
+A PyDict_SetItem
+A PyDict_New
+A PyUnicode_Type
+A _PyUnicode_IsWhitespace
+A _PyDict_GetItem_KnownHash
+A PyObject_VectorcallMethod
+A PyMem_Free
+A PyExc_StopIteration
+A PyList_Type
+A PyErr_NoMemory
+A PyDict_GetItemString
+A PyModuleDef_Init
+A PyObject_GC_Track
+A PyBytes_FromStringAndSize
+A _PyObject_ClearManagedDict
+A PyNumber_Long
+A PyUnstable_Code_NewWithPosOnlyArgs
+A PyExc_TypeError
+A PyMem_Realloc
+A PyType_FromMetaclass
+A PyObject_IsTrue
+A PyDict_Copy
+A PyObject_Str
+A PyExc_NameError
+A PyUnicode_AsUTF8String
+A PyTuple_Pack
+A _PyByteArray_empty_string
+A PyMem_Malloc
+A PyList_AsTuple
+A Py_EnterRecursiveCall
+A PyExc_ImportError
+A _Py_TrueStruct
+A PyMemoryView_FromMemory
+A PyExc_SystemError
+A _PyUnicode_FastCopyCharacters
+A PyObject_SetItem
+A _PyObject_GC_New
+A PyUnicode_FromString
+A _PyObject_VisitManagedDict
+A _PyType_Lookup
+A PyObject_Call
+A PyByteArray_Type
+A PyType_Type
+A PyUnicode_Substring
+A PyUnicode_FromStringAndSize
+A PyFloat_FromString
+A python312.dll
+A QueryPerformanceCounter
+A GetCurrentProcessId
+A GetCurrentThreadId
+A GetSystemTimeAsFileTime
+A DisableThreadLibraryCalls
+A InitializeSListHead
+A KERNEL32.dll
+A strrchr
+A __C_specific_handler
+A __std_type_info_destroy_list
+A VCRUNTIME140.dll
+A _initterm
+A _initterm_e
+A _seh_filter_dll
+A _configure_narrow_argv
+A _initialize_narrow_environment
+A _initialize_onexit_table
+A _execute_onexit_table
+A _cexit
+A api-ms-win-crt-runtime-l1-1-0.dll
+A memcmp
+A memcpy
+A memset
+A <?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+A <assembly xmlns='urn:schemas-microsoft-com:asm.v1' manifestVersion='1.0'>
+A </assembly>
